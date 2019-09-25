@@ -1,0 +1,37 @@
+# Resource
+*.png
+*.tga
+
+# Project
+.idea/
+.vs/
+*.DotSettings.user
+out/
+CMakeSettings.json
+
+# Object & Linker
+*.o
+*.obj
+*.elf
+*.ilk
+*.map
+*.exp
+
+# Libraries (Shared/Static)
+*.lib
+*.a
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug
+*.dSYM/
+*.su
+*.idb
+*.pdb
