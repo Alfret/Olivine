@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Filip BjÃ¶rklund
+// Copyright (c) 2019 Filip Björklund
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,48 +20,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "olivine/core/assert.hpp"
+#include "olivine/core/dialog.hpp"
 
 // ========================================================================== //
 // Headers
 // ========================================================================== //
 
 // Project headers
-#include "olivine/core/console.hpp"
-#include "olivine/core/dialog.hpp"
+#include "olivine/core/platform/headers.hpp"
 
 // ========================================================================== //
-// Functions
+// Dialog Implementation
 // ========================================================================== //
 
 namespace olivine {
 
 void
-Assert(bool condition, const String& message)
+Dialog::ShowError(const String& title, const String& message)
 {
-  // Go on if condition is met
-  if (condition) {
-    return;
-  }
+  // Convert to UTF-16
+  char16* _title = title.GetUTF16();
+  char16* _message = message.GetUTF16();
 
-  // Otherwise panic
-  Panic(message);
-}
+  // Show message box
+  MessageBoxW(nullptr, _message, _title, MB_OK | MB_ICONERROR);
 
-// -------------------------------------------------------------------------- //
-
-void
-Panic(const String& message)
-{
-  // Display message
-  Console::WriteLine("Program panicked with message: {}", message);
-
-  // Show dialog
-  Dialog::ShowError("Assertion failed", message);
-
-  // Flush console and exit
-  Console::Flush();
-  quick_exit(-1);
+  // Free strings
+  delete _title;
+  delete _message;
 }
 
 }

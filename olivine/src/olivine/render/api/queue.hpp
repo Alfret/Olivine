@@ -36,6 +36,8 @@
 
 namespace olivine {
 
+OL_FORWARD_DECLARE(CommandList);
+
 /** \class CommandQueue
  * \author Filip Björklund
  * \date 25 september 2019 - 17:57
@@ -46,8 +48,8 @@ namespace olivine {
 class CommandQueue
 {
 public:
-  /* Command queue types */
-  enum class Type
+  /* Command queue kinds */
+  enum class Kind
   {
     /* Graphics queue. Supports graphics, compute and copy commands */
     kGraphics,
@@ -60,16 +62,16 @@ public:
 private:
   /* Command queue handle */
   ID3D12CommandQueue* mHandle = nullptr;
-  /* Type of the command queue */
-  Type mType;
+  /* Kind of the command queue */
+  Kind mKind;
   /* Semaphore for flushing the queue */
   Semaphore mSemaphore;
 
 public:
-  /** Create a command queue of the specified type.
+  /** Create a command queue of the specified kind.
    * \brief Create command queue.
    */
-  explicit CommandQueue(Type type);
+  explicit CommandQueue(Kind kind);
 
   /** Destroy the command queue.
    * \note The user is responsible for making sure no work is being done or has
@@ -77,6 +79,13 @@ public:
    * \brief Destroy command queue.
    */
   ~CommandQueue();
+
+  /** Submit a command list for execution on the device with the specified
+   * command queue.
+   * \brief Submit command list.
+   * \param list Command list to submit.
+   */
+  void Submit(const CommandList* list);
 
   /** Signal a semaphore with the specified value on the device.
    * \note This will not immediately signal the semaphore but rather insert a
@@ -94,11 +103,11 @@ public:
    */
   void Flush();
 
-  /** Returns the type of the command queue.
-   * \brief Returns type.
-   * \return Type.
+  /** Returns the kind of the command queue.
+   * \brief Returns kind.
+   * \return Command queue kind.
    */
-  Type GetType() const { return mType; }
+  Kind GetKind() const { return mKind; }
 
   /** Set the name of the command queue.
    * \brief Set name.
@@ -106,9 +115,15 @@ public:
    */
   void SetName(const String& name);
 
+  /** Returns the handle of the command queue.
+   * \brief Returns handle.
+   * \return Handle.
+   */
+  ID3D12CommandQueue* GetHandle() const { return mHandle; }
+
 public:
   /** Convert to command-list type **/
-  static D3D12_COMMAND_LIST_TYPE ToCommandListType(Type type);
+  static D3D12_COMMAND_LIST_TYPE ToCommandListType(Kind kind);
 };
 
 }

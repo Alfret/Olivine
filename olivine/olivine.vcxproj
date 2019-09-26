@@ -94,6 +94,7 @@
     <ClCompile Include="src\olivine\app\app.cpp" />
     <ClCompile Include="src\olivine\core\assert.cpp" />
     <ClCompile Include="src\olivine\core\console.cpp" />
+    <ClCompile Include="src\olivine\core\dialog.cpp" />
     <ClCompile Include="src\olivine\core\file\file.cpp" />
     <ClCompile Include="src\olivine\core\file\path.cpp" />
     <ClCompile Include="src\olivine\core\file\result.cpp" />
@@ -103,6 +104,7 @@
     <ClCompile Include="src\olivine\core\shared_lib.cpp" />
     <ClCompile Include="src\olivine\core\string.cpp" />
     <ClCompile Include="src\olivine\core\version.cpp" />
+    <ClCompile Include="src\olivine\render\api\command_list.cpp" />
     <ClCompile Include="src\olivine\render\api\context.cpp" />
     <ClCompile Include="src\olivine\render\api\d3d12_util.cpp" />
     <ClCompile Include="src\olivine\render\api\descriptor.cpp" />
@@ -110,6 +112,8 @@
     <ClCompile Include="src\olivine\render\api\queue.cpp" />
     <ClCompile Include="src\olivine\render\api\semaphore.cpp" />
     <ClCompile Include="src\olivine\render\api\swap_chain.cpp" />
+    <ClCompile Include="src\olivine\render\api\texture.cpp" />
+    <ClCompile Include="src\olivine\render\color.cpp" />
     <ClCompile Include="src\thirdparty\alflib\alf_unicode.c" />
     <ClCompile Include="src\thirdparty\d3d12ma\D3D12MemAlloc.cpp" />
     <ClCompile Include="src\thirdparty\fmt\format.cc" />
@@ -148,6 +152,7 @@
     <ClInclude Include="src\olivine\core\collection\array_list.hpp" />
     <ClInclude Include="src\olivine\core\common.hpp" />
     <ClInclude Include="src\olivine\core\console.hpp" />
+    <ClInclude Include="src\olivine\core\dialog.hpp" />
     <ClInclude Include="src\olivine\core\file\file.hpp" />
     <ClInclude Include="src\olivine\core\file\file_io.hpp" />
     <ClInclude Include="src\olivine\core\file\file_system.hpp" />
@@ -161,6 +166,9 @@
     <ClInclude Include="src\olivine\core\traits.hpp" />
     <ClInclude Include="src\olivine\core\types.hpp" />
     <ClInclude Include="src\olivine\core\version.hpp" />
+    <ClInclude Include="src\olivine\math\math.hpp" />
+    <ClInclude Include="src\olivine\render\api\command_list.hpp" />
+    <ClInclude Include="src\olivine\render\api\common.hpp" />
     <ClInclude Include="src\olivine\render\api\context.hpp" />
     <ClInclude Include="src\olivine\render\api\d3d12_util.hpp" />
     <ClInclude Include="src\olivine\render\api\descriptor.hpp" />
@@ -168,6 +176,8 @@
     <ClInclude Include="src\olivine\render\api\queue.hpp" />
     <ClInclude Include="src\olivine\render\api\semaphore.hpp" />
     <ClInclude Include="src\olivine\render\api\swap_chain.hpp" />
+    <ClInclude Include="src\olivine\render\api\texture.hpp" />
+    <ClInclude Include="src\olivine\render\color.hpp" />
     <ClInclude Include="src\olivine\render\format.hpp" />
     <ClInclude Include="src\thirdparty\alflib\alf_unicode.h" />
     <ClInclude Include="src\thirdparty\d3d12ma\D3D12MemAlloc.h" />

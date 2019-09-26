@@ -79,6 +79,7 @@ Context::~Context()
   mFactory->Release();
   mFactory = nullptr;
 
+#if defined(_DEBUG)
   // Report live objects
   IDXGIDebug1* dxgiDebug;
   const HRESULT hresult = DXGIGetDebugInterface1(
@@ -87,6 +88,7 @@ Context::~Context()
     dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
     dxgiDebug->Release();
   }
+#endif
 }
 
 }

@@ -28,6 +28,7 @@
 
 // Project headers
 #include "olivine/core/string.hpp"
+#include "olivine/render/api/common.hpp"
 
 // ========================================================================== //
 // D3D12Util Implementation
@@ -57,6 +58,57 @@ D3D12Util::ToDXGIFormat(Format format)
     case Format::kInvalid:
     default: {
       return DXGI_FORMAT_UNKNOWN;
+    }
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+D3D12_HEAP_TYPE
+D3D12Util::ToHeapType(HeapKind kind)
+{
+  switch (kind) {
+    case HeapKind::kDefault: {
+      return D3D12_HEAP_TYPE_DEFAULT;
+    }
+    case HeapKind::kUpload: {
+      return D3D12_HEAP_TYPE_UPLOAD;
+    }
+    case HeapKind::kReadback: {
+      return D3D12_HEAP_TYPE_READBACK;
+    }
+    default: {
+      return (D3D12_HEAP_TYPE)UINT_MAX;
+    }
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+D3D12_RESOURCE_STATES
+D3D12Util::ToResourceStates(ResourceState state)
+{
+  switch (state) {
+    case ResourceState::kCommon: {
+      return D3D12_RESOURCE_STATE_COMMON;
+    }
+    case ResourceState::kRenderTarget: {
+      return D3D12_RESOURCE_STATE_RENDER_TARGET;
+    }
+    case ResourceState::kUnorderedAccess: {
+      return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+    }
+    case ResourceState::kPresent: {
+      return D3D12_RESOURCE_STATE_PRESENT;
+    }
+    case ResourceState::kCopySrc: {
+      return D3D12_RESOURCE_STATE_COPY_SOURCE;
+    }
+    case ResourceState::kCopyDst: {
+      return D3D12_RESOURCE_STATE_COPY_DEST;
+    }
+    default: {
+      return static_cast<D3D12_RESOURCE_STATES>(UINT_MAX);
     }
   }
 }

@@ -53,8 +53,6 @@ public:
 private:
   /* Frame resources */
   Frame mFrames[SwapChain::kBufferCount];
-  /* Clear color */
-  Color mClearColor = Color::FromHex(0xE5E5E5FF);
 
 public:
   /** Construct **/
@@ -94,7 +92,7 @@ public:
     frame.list->TransitionResource(
       buffer, ResourceState::kPresent, ResourceState::kRenderTarget);
     frame.list->SetRenderTarget(rt);
-    frame.list->ClearRenderTarget(rt, mClearColor);
+    frame.list->ClearRenderTarget(rt, Color::kCornflowerBlue);
     frame.list->SetViewport(EntireViewport());
     frame.list->TransitionResource(
       buffer, ResourceState::kRenderTarget, ResourceState::kPresent);
@@ -126,7 +124,7 @@ main()
 {
   // Create app
   App::CreateInfo appInfo{};
-  appInfo.title = "01 - Triangle";
+  appInfo.title = "00 - Clear";
   appInfo.window.width = 1280;
   appInfo.window.height = 720;
   appInfo.flags = App::Flag::kExitOnEscape;

@@ -29,6 +29,7 @@
 // Project headers
 #include "olivine/app/app.hpp"
 #include "olivine/render/api/device.hpp"
+#include "olivine/render/api/command_list.hpp"
 
 // ========================================================================== //
 // CommandQueue Implementation
@@ -36,11 +37,11 @@
 
 namespace olivine {
 
-CommandQueue::CommandQueue(Type type)
-  : mType(type)
+CommandQueue::CommandQueue(Kind kind)
+  : mKind(kind)
 {
   D3D12_COMMAND_QUEUE_DESC desc{};
-  desc.Type = ToCommandListType(type);
+  desc.Type = ToCommandListType(kind);
   desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
   desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
   desc.NodeMask = 0x00;
@@ -63,9 +64,30 @@ CommandQueue::~CommandQueue()
 // -------------------------------------------------------------------------- //
 
 void
+CommandQueue::Submit(const CommandList* list)
+{
+#if defined(_DEBUG)
+  if (list->GetKind() == Kind::kGraphics) {
+    Assert(mKind == Kind::kGraphics,
+           "Graphics command lists can only be submitted for execution on a "
+           "graphics command queue");
+  } else if (list->GetKind() == Kind::kCompute) {
+    Assert(mKind == Kind::kGraphics || mKind == Kind::kCompute,
+           "Compute command lists can only be submitted for execution on a "
+           "graphics or compute command queue");
+  }
+#endif
+
+  ID3D12CommandList* lists[] = { list->GetHandle() };
+  mHandle->ExecuteCommandLists(1, lists);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
 CommandQueue::SignalSemaphore(Semaphore* semaphore, u64 value) const
 {
-  HRESULT hresult = mHandle->Signal(semaphore->GetHandle(), value);
+  const HRESULT hresult = mHandle->Signal(semaphore->GetHandle(), value);
   Assert(SUCCEEDED(hresult), "Failed to submit command to signal semaphore");
 }
 
@@ -91,16 +113,16 @@ CommandQueue::SetName(const String& name)
 // -------------------------------------------------------------------------- //
 
 D3D12_COMMAND_LIST_TYPE
-CommandQueue::ToCommandListType(Type type)
+CommandQueue::ToCommandListType(Kind kind)
 {
-  switch (type) {
-    case Type::kGraphics: {
+  switch (kind) {
+    case Kind::kGraphics: {
       return D3D12_COMMAND_LIST_TYPE_DIRECT;
     }
-    case Type::kCompute: {
+    case Kind::kCompute: {
       return D3D12_COMMAND_LIST_TYPE_COMPUTE;
     }
-    case Type::kCopy: {
+    case Kind::kCopy: {
       return D3D12_COMMAND_LIST_TYPE_COPY;
     }
     default: {

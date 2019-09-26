@@ -58,4 +58,20 @@ Max(T a, T b)
   return a > b ? a : b;
 }
 
+// -------------------------------------------------------------------------- //
+
+/** Returns a value clamped between a lower and upper limit.
+ * \brief Returns clamped value.
+ * \param value Value to clamp.
+ * \param lower Lower limit.
+ * \param upper Upper limit.
+ * \return Clamped value.
+ */
+template<typename T>
+constexpr T
+Clamp(T value, T lower, T upper)
+{
+  return value < lower ? lower : value > upper ? upper : value;
+}
+
 }

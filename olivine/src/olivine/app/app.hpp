@@ -45,6 +45,7 @@ OL_FORWARD_DECLARE(Context);
 OL_FORWARD_DECLARE(Device);
 OL_FORWARD_DECLARE(CommandQueue);
 OL_FORWARD_DECLARE(SwapChain);
+OL_FORWARD_DECLARE(Viewport);
 
 /** \class App
  * \author Filip Björklund
@@ -203,6 +204,12 @@ public:
    */
   void ExitFullscreen();
 
+  /** Toggle between fullscreen and windowed mode.
+   * \note This will use the 'NULL' video mode when entering fullscreen.
+   * \brief Toggle fullscreen.
+   */
+  void ToggleFullscreen();
+
   /** Called each frame to update the application.
    * \brief Update app.
    * \param delta Delta time.
@@ -275,6 +282,24 @@ public:
    * \return Copy command queue.
    */
   CommandQueue* GetCopyQueue() const { return mCopyQueue; }
+
+  /** Returns the swap chain of the application window.
+   * \brief Returns swap chain.
+   * \return Swap chain.
+   */
+  SwapChain* GetSwapChain() const { return mSwapChain; }
+
+  /** Flush all the command queues that are owned by the application (default
+   * queues).
+   * \brief Flush queues.
+   */
+  void FlushQueues();
+
+  /** Returns a viewport that represents the entire window.
+   * \brief Returns full viewport.
+   * \return Viewport.
+   */
+  Viewport EntireViewport() const;
 
 private:
   /** Center the app window **/

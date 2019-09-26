@@ -33,6 +33,7 @@
 #include "olivine/render/api/device.hpp"
 #include "olivine/render/api/queue.hpp"
 #include "olivine/render/api/swap_chain.hpp"
+#include "olivine/render/api/common.hpp"
 
 // Thirdparty headers
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -70,11 +71,11 @@ App::App(const CreateInfo& createInfo)
   mDevice = new Device(deviceInfo);
 
   // Create command queues
-  mGraphicsQueue = new CommandQueue(CommandQueue::Type::kGraphics);
+  mGraphicsQueue = new CommandQueue(CommandQueue::Kind::kGraphics);
   mGraphicsQueue->SetName("GraphicsQueue");
-  mComputeQueue = new CommandQueue(CommandQueue::Type::kCompute);
+  mComputeQueue = new CommandQueue(CommandQueue::Kind::kCompute);
   mComputeQueue->SetName("ComputeQueue");
-  mCopyQueue = new CommandQueue(CommandQueue::Type::kCopy);
+  mCopyQueue = new CommandQueue(CommandQueue::Kind::kCopy);
   mCopyQueue->SetName("CopyQueue");
 
   // Create window
@@ -109,9 +110,7 @@ App::App(const CreateInfo& createInfo)
 App::~App()
 {
   // Flush all queues
-  mGraphicsQueue->Flush();
-  mComputeQueue->Flush();
-  mCopyQueue->Flush();
+  FlushQueues();
 
   // Delete swap chain
   delete mSwapChain;
@@ -154,10 +153,12 @@ App::Run()
     }
 
     // Update
+    Update(0.0);
 
     // Update fixed
 
     // Render
+    Render();
   }
 
   // Hide window
@@ -257,6 +258,36 @@ App::ExitFullscreen()
 // -------------------------------------------------------------------------- //
 
 void
+App::ToggleFullscreen()
+{
+  if (mWindow.isFullscreen) {
+    ExitFullscreen();
+  } else {
+    EnterFullscreen();
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+App::FlushQueues()
+{
+  mGraphicsQueue->Flush();
+  mComputeQueue->Flush();
+  mCopyQueue->Flush();
+}
+
+// -------------------------------------------------------------------------- //
+
+Viewport
+App::EntireViewport() const
+{
+  return Viewport::Make(f32(mWindow.width), f32(mWindow.height));
+}
+
+// -------------------------------------------------------------------------- //
+
+void
 App::CenterWindow()
 {
   // Retrieve monitor and video mode
@@ -339,6 +370,12 @@ App::WindowResizeCallbackGLFW(GLFWwindow* window, int width, int height)
   auto app = static_cast<App*>(glfwGetWindowUserPointer(window));
   app->mWindow.width = u32(width);
   app->mWindow.height = u32(height);
+
+  // Resize swap chain
+  app->FlushQueues();
+  app->mSwapChain->Resize(app->mWindow.width, app->mWindow.height);
+
+  // Callback
   app->OnResize(app->mWindow.width, app->mWindow.height);
 }
 

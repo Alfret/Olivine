@@ -26,14 +26,6 @@
 // Macros: Functions
 // ========================================================================== //
 
-/** Declare class as a namespace class. Only static members **/
-#define OL_NAMESPACE_CLASS(cls)                                                \
-public:                                                                        \
-  cls() = delete;                                                              \
-  ~cls() = delete;
-
-// -------------------------------------------------------------------------- //
-
 /** Macro for generating operators for an enum class **/
 #define OL_ENUM_CLASS_OPERATORS(prefix, type, underlying_type)                 \
   prefix type operator|(type lhs, type rhs)                                    \
@@ -59,6 +51,11 @@ public:                                                                        \
 
 // -------------------------------------------------------------------------- //
 
+/** Macro for forward declaring an enum class **/
+#define OL_FORWARD_DECLARE_ENUM(type) enum class type
+
+// -------------------------------------------------------------------------- //
+
 /** Macro to mark variable as not being used **/
 #define OL_UNUSE(var) (void)var
 
@@ -78,3 +75,37 @@ public:                                                                        \
 
 /** Macro for declaring a function as non-returning **/
 #define OL_NORETURN [[noreturn]]
+
+// ========================================================================== //
+// Macros: Class Modifiers
+// ========================================================================== //
+
+/** Declare class as a namespace class. Only static members **/
+#define OL_NAMESPACE_CLASS(cls)                                                \
+public:                                                                        \
+  cls() = delete;                                                              \
+  ~cls() = delete;
+
+// -------------------------------------------------------------------------- //
+
+/* Macro to declare a class as non-copyable */
+#define OL_NO_COPY(cls)                                                        \
+public:                                                                        \
+  cls(const cls&) = delete;                                                    \
+  cls& operator=(const cls&) = delete;
+
+// -------------------------------------------------------------------------- //
+
+/* Macro to declare a class as non-movable */
+#define OL_NO_MOVE(cls)                                                        \
+public:                                                                        \
+  cls(cls&&) = delete;                                                         \
+  cls& operator=(&cls&) = delete;
+
+// -------------------------------------------------------------------------- //
+
+/* Macro to declare a class as default-copyable */
+#define OL_DEFAULT_COPY(cls)                                                   \
+public:                                                                        \
+  cls(const cls&) = default;                                                   \
+  cls& operator=(const cls&) = default;
