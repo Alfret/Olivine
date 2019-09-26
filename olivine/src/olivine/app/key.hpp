@@ -35,9 +35,21 @@
 
 namespace olivine {
 
-/** Enumeration of keyboard keys **/
+/** \enum Key
+ * \author Filip Björklund
+ * \date 26 september 2019 - 14:19
+ * \brief Keys.
+ * \details
+ * Enumeration of keys that are common to most keyboards. Some keys may not be
+ * included in the enumeration and will be reported as 'unknown'.
+ */
 enum class Key
 {
+  /* Invalid key (will never be parameter to callback) */
+  kInvalid = GLFW_KEY_UNKNOWN - 1,
+  /* Unknown key  */
+  kUnknown = GLFW_KEY_UNKNOWN,
+  /* Space key */
   kSpace = GLFW_KEY_SPACE,
   kApostrophe = GLFW_KEY_APOSTROPHE,
   kComma = GLFW_KEY_COMMA,

@@ -29,6 +29,7 @@
 // Project headers
 #include "olivine/core/assert.hpp"
 #include "olivine/core/console.hpp"
+#include "olivine/core/time.hpp"
 #include "olivine/render/api/context.hpp"
 #include "olivine/render/api/device.hpp"
 #include "olivine/render/api/queue.hpp"
@@ -52,6 +53,8 @@ App* App::sInstance = nullptr;
 App::App(const CreateInfo& createInfo)
   : mTitle(createInfo.title)
   , mFlags(createInfo.flags)
+  , mUPS(createInfo.ups)
+  , mKeyToggleFullscreen(createInfo.toggleFullscreenKey)
   , mWindow{ nullptr, createInfo.window.width, createInfo.window.height }
 {
   Assert(sInstance == nullptr, "Only one application can exist at one time");
@@ -103,12 +106,20 @@ App::App(const CreateInfo& createInfo)
   mSwapChain = new SwapChain(swapChainInfo);
   Assert(mSwapChain != nullptr, "Failed to create swap chain");
   mSwapChain->SetName("SwapChain");
+
+  // Enable vertical sync if requested
+  if (bool(mFlags & Flag::kVerticalSync)) {
+    mSwapChain->EnableVerticalSync();
+  }
 }
 
 // -------------------------------------------------------------------------- //
 
 App::~App()
 {
+  // Exit fullscreen
+  ExitFullscreen();
+
   // Flush all queues
   FlushQueues();
 
@@ -143,9 +154,23 @@ App::Run()
   CenterWindow();
   Show();
 
+  // Timing variables
+  Time prevTime = Time::Now();
+  const Time frameTime = Time::FromSeconds(1.0 / mUPS);
+  Time accumTime = 0;
+
   // Run app loop
   mRunning = true;
   while (mRunning) {
+    // Update timing
+    const Time nowTime = Time::Now();
+    Time deltaTime = nowTime - prevTime;
+    prevTime = nowTime;
+    if (deltaTime > frameTime * 8) {
+      deltaTime -= frameTime;
+    }
+    accumTime += deltaTime;
+
     // GLFW updating
     glfwPollEvents();
     if (glfwWindowShouldClose(mWindow.handle)) {
@@ -153,9 +178,13 @@ App::Run()
     }
 
     // Update
-    Update(0.0);
+    Update(deltaTime.GetSeconds());
 
     // Update fixed
+    while (accumTime >= frameTime) {
+      FixedUpdate();
+      accumTime -= frameTime;
+    }
 
     // Render
     Render();
@@ -264,6 +293,72 @@ App::ToggleFullscreen()
     ExitFullscreen();
   } else {
     EnterFullscreen();
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+bool
+App::IsGamepadConnected(u32 index) const
+{
+  return glfwJoystickPresent(GLFW_JOYSTICK_1 + index);
+}
+
+// -------------------------------------------------------------------------- //
+
+bool
+App::IsGamepadButtonDown(GamepadButton button, u32 index) const
+{
+  GLFWgamepadstate state;
+  if (glfwGetGamepadState(GLFW_JOYSTICK_1 + index, &state)) {
+    return state.buttons[static_cast<int>(button)] == GLFW_PRESS;
+  }
+  return false;
+}
+
+// -------------------------------------------------------------------------- //
+
+f32
+App::GetGamepadAxis(GamepadAxis axis, u32 index) const
+{
+  GLFWgamepadstate state;
+  if (glfwGetGamepadState(GLFW_JOYSTICK_1 + index, &state)) {
+    return state.axes[static_cast<int>(axis)];
+  }
+  return 0.0f;
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+App::EnableGrabCursor()
+{
+  if (!mCursorGrabbed) {
+    glfwSetInputMode(mWindow.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    mCursorGrabbed = true;
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+App::DisableGrabCursor()
+{
+  if (mCursorGrabbed) {
+    glfwSetInputMode(mWindow.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    mCursorGrabbed = false;
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+App::ToggleGrabCursor()
+{
+  if (mCursorGrabbed) {
+    EnableGrabCursor();
+  } else {
+    DisableGrabCursor();
   }
 }
 
@@ -405,6 +500,9 @@ App::KeyCallbackGLFW(GLFWwindow* window,
   } else {
     if (bool(app->mFlags & Flag::kExitOnEscape) && _key == Key::kEscape) {
       app->Exit();
+    }
+    if (_key == app->mKeyToggleFullscreen) {
+      app->ToggleFullscreen();
     }
     app->OnKeyPress(_key, action == GLFW_REPEAT);
   }

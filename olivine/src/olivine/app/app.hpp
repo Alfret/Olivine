@@ -28,6 +28,7 @@
 
 // Project headers
 #include "olivine/app/key.hpp"
+#include "olivine/app/gamepad.hpp"
 #include "olivine/core/types.hpp"
 #include "olivine/core/string.hpp"
 #include "olivine/core/common.hpp"
@@ -66,7 +67,9 @@ public:
      * escape key */
     kExitOnEscape = Bit(0u),
     /* Specifies that the window should be resizable */
-    kResizable = Bit(1u)
+    kResizable = Bit(1u),
+    /* Specifies that vertical blank synchronization should be enabled */
+    kVerticalSync = Bit(2u)
   };
   OL_ENUM_CLASS_OPERATORS(friend, Flag, u32);
 
@@ -83,6 +86,15 @@ public:
       /** Height **/
       u32 height = 400;
     } window;
+
+    /* Target updates per second of the application. This will determine how
+     * often the fixed update is called. It will however have no effect on the
+     * standard 'Update' and 'Render' functions */
+    u64 ups = 60;
+
+    /* Key for toggling fullscreen. Default to 'invalid' which means that the
+     * toggle feature is disabled and must be handled manually by the user */
+    Key toggleFullscreenKey = Key::kInvalid;
 
     /* Creation flags */
     Flag flags = Flag::kNone;
@@ -109,6 +121,12 @@ private:
 
   /* Flags specified on creation */
   Flag mFlags;
+
+  /* Updates per second */
+  u64 mUPS;
+
+  /* Key for toggling fullscreen */
+  Key mKeyToggleFullscreen;
 
   /* Render context */
   Context* mContext;
@@ -153,8 +171,10 @@ private:
     } old;
   } mWindow;
 
-  /** Whether app is running **/
+  /* Whether app is running */
   bool mRunning = false;
+  /* Whether cursor is grabbed */
+  bool mCursorGrabbed = false;
 
 public:
   /** Create an application object from a creation information structure.
@@ -247,6 +267,32 @@ public:
    */
   virtual void OnMouseMove(f64 x, f64 y) {}
 
+  /** Returns whether or not a gamepad is connected with the specified index
+   * in the gamepad list.
+   * \brief Returns whether gamepad is connected.
+   * \param index Index of the gamepad.
+   * \return True if the gamepad is connected otherwise false.
+   */
+  bool IsGamepadConnected(u32 index = 0) const;
+
+  /** Returns whether or not the specified gamepad button is pressed down on the
+   * gamepad with the specified index.
+   * \brief Returns whether gamepad button is pressed.
+   * \param button Button to check if down.
+   * \param index Index of the gamepad to check the button for.
+   * \return True if the gamepad button is down otherwise false.
+   */
+  bool IsGamepadButtonDown(GamepadButton button, u32 index = 0) const;
+
+  /** Returns the value of the specified gamepad axis for the gamepad at the
+   * specified index.
+   * \brief Returns gamepad axis value.
+   * \param axis Axis to get value for.
+   * \param index Index of the gamepad to get value for.
+   * \return Axis value on the range [-1.0, 1.0]
+   */
+  f32 GetGamepadAxis(GamepadAxis axis, u32 index = 0) const;
+
   /** Called when the application window has been resized.
    * \note The width and height describe the client area of the window.
    * \brief Called on window resize.
@@ -288,6 +334,23 @@ public:
    * \return Swap chain.
    */
   SwapChain* GetSwapChain() const { return mSwapChain; }
+
+  /** Enabled cursor grabbing. This will keep the cursor inside the window and
+   * thus allow moving it infinitely. Mouse motion are still reported as normal.
+   * \brief Enable cursor grab.
+   */
+  void EnableGrabCursor();
+
+  /** Disable cursor grabbing.
+   * \brief Disable cursor grab.
+   */
+  void DisableGrabCursor();
+
+  /** Toggle cursor grabbing. When the cursor is grabbed it can be moved
+   * infinitely without exiting the window.
+   * \brief Toggle cursor grab.
+   */
+  void ToggleGrabCursor();
 
   /** Flush all the command queues that are owned by the application (default
    * queues).

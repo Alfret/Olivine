@@ -20,85 +20,77 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "olivine/core/console.hpp"
+#pragma once
 
 // ========================================================================== //
 // Headers
 // ========================================================================== //
 
 // Project headers
-#include "olivine/core/platform/headers.hpp"
+#include "olivine/math/simd.hpp"
 
 // ========================================================================== //
-// Console Declaration
+// Vector2F Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-String
-Console::Colored(const String& string, Console::Color color)
+/** Vector2F **/
+class Vector2F
 {
-  return String::Format("\033[38;5;{}m{}\033[0m", color, string);
-}
+private:
+  /** Simd data **/
+  Float2x32 mData;
 
-// -------------------------------------------------------------------------- //
+public:
+  /** Construct from values **/
+  Vector2F(f32 x, f32 y);
 
-void
-Console::Flush()
-{
-  fflush(stdout);
-}
+  /** Construct and fill with a single value **/
+  explicit Vector2F(f32 value = 0.0f);
 
-// -------------------------------------------------------------------------- //
+  /** Addition **/
+  Vector2F operator+(const Vector2F& other) const;
 
-void
-Console::Write_(const String& message)
-{
-  char16* _message = message.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Compound addition **/
+  void operator+=(const Vector2F& other);
 
-  fputs(message.GetUTF8(), stdout);
-}
+  /** Subtraction **/
+  Vector2F operator-(const Vector2F& other) const;
 
-// -------------------------------------------------------------------------- //
+  /** Compound subtraction **/
+  void operator-=(const Vector2F& other);
 
-void
-Console::WriteErr_(const String& message)
-{
-  char16* _message = message.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Multiplication **/
+  Vector2F operator*(const Vector2F& other) const;
 
-  fputs(message.GetUTF8(), stderr);
-}
+  /** Compound multiplication **/
+  void operator*=(const Vector2F& other);
 
-// -------------------------------------------------------------------------- //
+  /** Division **/
+  Vector2F operator/(const Vector2F& other) const;
 
-void
-Console::WriteLine_(const String& message)
-{
-  const String withNewline = message + "\n";
+  /** Compound division **/
+  void operator/=(const Vector2F& other);
 
-  char16* _message = withNewline.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Equality **/
+  bool operator==(const Vector2F& other) const;
 
-  fputs(withNewline.GetUTF8(), stdout);
-}
+  /** Inequality **/
+  bool operator!=(const Vector2F& other) const;
 
-// -------------------------------------------------------------------------- //
+  /** Returns value and index **/
+  f32& operator[](u32 index);
 
-void
-Console::WriteErrLine_(const String& message)
-{
-  const String withNewline = message + "\n";
+  /** Returns value and index **/
+  const f32& operator[](u32 index) const;
 
-  char16* _message = withNewline.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Dot product **/
+  f32 Dot(const Vector2F& other) const;
 
-  fputs(withNewline.GetUTF8(), stderr);
-}
+private:
+  /** Construct from data **/
+  explicit Vector2F(const Float2x32& data);
+};
 
 }

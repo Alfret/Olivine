@@ -28,6 +28,7 @@
 #include <olivine/render/api/swap_chain.hpp>
 #include <olivine/render/api/command_list.hpp>
 #include <olivine/render/api/common.hpp>
+#include "olivine/core/time.hpp"
 
 // ========================================================================== //
 // Sample
@@ -107,14 +108,6 @@ public:
     // Present
     GetSwapChain()->Present();
   }
-
-  /* Key presses */
-  void OnKeyPress(Key key, bool repeat) override
-  {
-    if (key == Key::kF && !repeat) {
-      ToggleFullscreen();
-    }
-  }
 };
 
 // ========================================================================== //
@@ -130,6 +123,7 @@ main()
   appInfo.window.width = 1280;
   appInfo.window.height = 720;
   appInfo.flags = App::Flag::kExitOnEscape;
+  appInfo.toggleFullscreenKey = Key::kF;
   Sample app(appInfo);
 
   // Run app

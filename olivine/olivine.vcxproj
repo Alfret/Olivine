@@ -98,12 +98,18 @@
     <ClCompile Include="src\olivine\core\file\file.cpp" />
     <ClCompile Include="src\olivine\core\file\path.cpp" />
     <ClCompile Include="src\olivine\core\file\result.cpp" />
-    <ClCompile Include="src\olivine\core\file\file_io_win32.cpp" />
-    <ClCompile Include="src\olivine\core\file\file_system_win32.cpp" />
+    <ClCompile Include="src\olivine\core\file\file_io.cpp" />
+    <ClCompile Include="src\olivine\core\file\file_system.cpp" />
     <ClCompile Include="src\olivine\core\memory.cpp" />
     <ClCompile Include="src\olivine\core\shared_lib.cpp" />
     <ClCompile Include="src\olivine\core\string.cpp" />
+    <ClCompile Include="src\olivine\core\time.cpp" />
     <ClCompile Include="src\olivine\core\version.cpp" />
+    <ClCompile Include="src\olivine\math\matrix4f.cpp" />
+    <ClCompile Include="src\olivine\math\simd.cpp" />
+    <ClCompile Include="src\olivine\math\vector2f.cpp" />
+    <ClCompile Include="src\olivine\math\vector3f.cpp" />
+    <ClCompile Include="src\olivine\math\vector4f.cpp" />
     <ClCompile Include="src\olivine\render\api\command_list.cpp" />
     <ClCompile Include="src\olivine\render\api\context.cpp" />
     <ClCompile Include="src\olivine\render\api\d3d12_util.cpp" />
@@ -147,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\olivine\app\app.hpp" />
+    <ClInclude Include="src\olivine\app\gamepad.hpp" />
     <ClInclude Include="src\olivine\app\key.hpp" />
     <ClInclude Include="src\olivine\core\assert.hpp" />
     <ClInclude Include="src\olivine\core\collection\array_list.hpp" />
@@ -163,10 +170,16 @@
     <ClInclude Include="src\olivine\core\platform\headers.hpp" />
     <ClInclude Include="src\olivine\core\shared_lib.hpp" />
     <ClInclude Include="src\olivine\core\string.hpp" />
+    <ClInclude Include="src\olivine\core\time.hpp" />
     <ClInclude Include="src\olivine\core\traits.hpp" />
     <ClInclude Include="src\olivine\core\types.hpp" />
     <ClInclude Include="src\olivine\core\version.hpp" />
     <ClInclude Include="src\olivine\math\math.hpp" />
+    <ClInclude Include="src\olivine\math\matrix4f.hpp" />
+    <ClInclude Include="src\olivine\math\simd.hpp" />
+    <ClInclude Include="src\olivine\math\vector2f.hpp" />
+    <ClInclude Include="src\olivine\math\vector3f.hpp" />
+    <ClInclude Include="src\olivine\math\vector4f.hpp" />
     <ClInclude Include="src\olivine\render\api\command_list.hpp" />
     <ClInclude Include="src\olivine\render\api\common.hpp" />
     <ClInclude Include="src\olivine\render\api\context.hpp" />

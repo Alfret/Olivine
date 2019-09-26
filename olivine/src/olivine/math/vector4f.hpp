@@ -20,85 +20,80 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "olivine/core/console.hpp"
+#pragma once
 
 // ========================================================================== //
 // Headers
 // ========================================================================== //
 
 // Project headers
-#include "olivine/core/platform/headers.hpp"
+#include "olivine/math/simd.hpp"
 
 // ========================================================================== //
-// Console Declaration
+// Vector4F Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-String
-Console::Colored(const String& string, Console::Color color)
+/** Vector4F  **/
+class Vector4F
 {
-  return String::Format("\033[38;5;{}m{}\033[0m", color, string);
-}
+private:
+  /** Simd data **/
+  Float4x32 mData;
 
-// -------------------------------------------------------------------------- //
+public:
+  /** Construct from values **/
+  Vector4F(f32 x, f32 y, f32 z, f32 w = 0.0f);
 
-void
-Console::Flush()
-{
-  fflush(stdout);
-}
+  /** Construct and fill with a single value **/
+  Vector4F(f32 value = 0.0f);
 
-// -------------------------------------------------------------------------- //
+  /** Addition **/
+  Vector4F operator+(const Vector4F& other);
 
-void
-Console::Write_(const String& message)
-{
-  char16* _message = message.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Compound addition **/
+  void operator+=(const Vector4F& other);
 
-  fputs(message.GetUTF8(), stdout);
-}
+  /** Subtraction **/
+  Vector4F operator-(const Vector4F& other);
 
-// -------------------------------------------------------------------------- //
+  /** Compound subtraction **/
+  void operator-=(const Vector4F& other);
 
-void
-Console::WriteErr_(const String& message)
-{
-  char16* _message = message.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Multiplication **/
+  Vector4F operator*(const Vector4F& other);
 
-  fputs(message.GetUTF8(), stderr);
-}
+  /** Compound multiplication **/
+  void operator*=(const Vector4F& other);
 
-// -------------------------------------------------------------------------- //
+  /** Division **/
+  Vector4F operator/(const Vector4F& other);
 
-void
-Console::WriteLine_(const String& message)
-{
-  const String withNewline = message + "\n";
+  /** Compound division **/
+  void operator/=(const Vector4F& other);
 
-  char16* _message = withNewline.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Equality **/
+  bool operator==(const Vector4F& other);
 
-  fputs(withNewline.GetUTF8(), stdout);
-}
+  /** Inequality **/
+  bool operator!=(const Vector4F& other);
 
-// -------------------------------------------------------------------------- //
+  /** Returns value and index **/
+  f32& operator[](u32 index);
 
-void
-Console::WriteErrLine_(const String& message)
-{
-  const String withNewline = message + "\n";
+  /** Returns value and index **/
+  const f32& operator[](u32 index) const;
 
-  char16* _message = withNewline.GetUTF16();
-  OutputDebugStringW(_message);
-  delete[] _message;
+  /** Dot product **/
+  f32 Dot(const Vector4F& other) const;
 
-  fputs(withNewline.GetUTF8(), stderr);
-}
+  /** Returns the simd data **/
+  Float4x32 GetData() const { return mData; };
+
+private:
+  /** Construct from data **/
+  Vector4F(const Float4x32& data);
+};
 
 }

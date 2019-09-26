@@ -101,6 +101,9 @@ private:
   /* Name that is set. Used to re-set after resize */
   String mName;
 
+  /* Whether vertical sync is enabled */
+  bool mVerticalSync = false;
+
 public:
   /** Create a swap chain from a creation information structure.
    * \brief Create swap chain.
@@ -161,6 +164,16 @@ public:
    * \return Current RTV.
    */
   Descriptor CurrentRT() const { return RT(mIndex); };
+
+  /** Enable vertical synchronization.
+   * \brief Enabled vsync.
+   */
+  void EnableVerticalSync() { mVerticalSync = true; }
+
+  /** Disable vertical synchronization.
+   * \brief Disable vsync.
+   */
+  void DisableVerticalSync() { mVerticalSync = false; }
 
   /** Set the name of the swap chain.
    * \brief Set name.

@@ -122,7 +122,7 @@ void
 SwapChain::Present()
 {
   // Present
-  const HRESULT hresult = mHandle->Present(0, 0);
+  const HRESULT hresult = mHandle->Present(mVerticalSync ? 1 : 0, 0);
   Assert(SUCCEEDED(hresult), "Failed to present swap chain");
 
   // Retrieve next index
