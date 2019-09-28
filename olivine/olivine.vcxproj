@@ -100,6 +100,7 @@
     <ClCompile Include="src\olivine\core\file\result.cpp" />
     <ClCompile Include="src\olivine\core\file\file_io.cpp" />
     <ClCompile Include="src\olivine\core\file\file_system.cpp" />
+    <ClCompile Include="src\olivine\core\image.cpp" />
     <ClCompile Include="src\olivine\core\memory.cpp" />
     <ClCompile Include="src\olivine\core\shared_lib.cpp" />
     <ClCompile Include="src\olivine\core\string.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="src\olivine\core\file\file_system.hpp" />
     <ClInclude Include="src\olivine\core\file\path.hpp" />
     <ClInclude Include="src\olivine\core\file\result.hpp" />
+    <ClInclude Include="src\olivine\core\image.hpp" />
     <ClInclude Include="src\olivine\core\macros.hpp" />
     <ClInclude Include="src\olivine\core\memory.hpp" />
     <ClInclude Include="src\olivine\core\platform\headers.hpp" />
@@ -179,6 +181,7 @@
     <ClInclude Include="src\olivine\core\traits.hpp" />
     <ClInclude Include="src\olivine\core\types.hpp" />
     <ClInclude Include="src\olivine\core\version.hpp" />
+    <ClInclude Include="src\olivine\math\limits.hpp" />
     <ClInclude Include="src\olivine\math\math.hpp" />
     <ClInclude Include="src\olivine\math\matrix4f.hpp" />
     <ClInclude Include="src\olivine\math\simd.hpp" />
@@ -221,6 +224,12 @@
     <ClInclude Include="src\thirdparty\mimalloc\mimalloc-internal.h" />
     <ClInclude Include="src\thirdparty\mimalloc\mimalloc-types.h" />
     <ClInclude Include="src\thirdparty\mimalloc\mimalloc.h" />
+    <ClInclude Include="src\thirdparty\stb\stb_dxt.h" />
+    <ClInclude Include="src\thirdparty\stb\stb_image.h" />
+    <ClInclude Include="src\thirdparty\stb\stb_image_resize.h" />
+    <ClInclude Include="src\thirdparty\stb\stb_image_write.h" />
+    <ClInclude Include="src\thirdparty\stb\stb_rect_pack.h" />
+    <ClInclude Include="src\thirdparty\stb\stb_truetype.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
