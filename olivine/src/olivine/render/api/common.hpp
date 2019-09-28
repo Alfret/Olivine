@@ -27,7 +27,7 @@
 // ========================================================================== //
 
 // Project headers
-#include "olivine/render/api/d3d12_util.hpp"
+#include "olivine/core/common.hpp"
 
 // ========================================================================== //
 // HeapKind Enumeration
@@ -84,6 +84,82 @@ enum class ResourceState : u32
   kCopySrc,
   /* State in which the resource can be the target of a copy operation */
   kCopyDst
+};
+
+}
+
+// ========================================================================== //
+// ShaderKind Enumeration
+// ========================================================================== //
+
+namespace olivine {
+
+/** \class ShaderStage
+ * \author Filip Björklund
+ * \date 26 september 2019 - 20:50
+ * \brief Shader stages.
+ * \details
+ * Enumeration of shader stages.
+ */
+enum class ShaderStage : u32
+{
+  /* No shader stage */
+  kNone = 0,
+  /* Vertex shader */
+  kVertex = Bit(0u),
+  /* Pixel shader */
+  kPixel = Bit(1u),
+  /* Compute shader */
+  kCompute = Bit(2u),
+  /* All shader kinds combined */
+  kAll = kVertex | kPixel | kCompute
+};
+
+// -------------------------------------------------------------------------- //
+
+inline ShaderStage
+operator|(ShaderStage lhs, ShaderStage rhs)
+{
+  return static_cast<ShaderStage>(static_cast<u32>(lhs) |
+                                  static_cast<u32>(rhs));
+}
+
+// -------------------------------------------------------------------------- //
+
+inline ShaderStage operator&(ShaderStage lhs, ShaderStage rhs)
+{
+  return static_cast<ShaderStage>(static_cast<u32>(lhs) &
+                                  static_cast<u32>(rhs));
+}
+
+// -------------------------------------------------------------------------- //
+
+inline ShaderStage&
+operator|=(ShaderStage& lhs, ShaderStage rhs)
+{
+  lhs = (lhs | rhs);
+  return lhs;
+};
+
+}
+
+// ========================================================================== //
+// PrimitiveTopology Enumeration
+// ========================================================================== //
+
+namespace olivine {
+
+/** \enum PrimitiveTopology
+ * \author Filip Björklund
+ * \date 27 september 2019 - 17:47
+ * \brief Primitive topologies.
+ * \details
+ * Enumeration of primitive topologies.
+ */
+enum class PrimitiveTopology : u32
+{
+  /* List of triangles */
+  kTriangleList
 };
 
 }

@@ -28,6 +28,7 @@
 
 // Project headers
 #include "olivine/core/string.hpp"
+#include "olivine/core/assert.hpp"
 #include "olivine/render/api/common.hpp"
 
 // ========================================================================== //
@@ -109,6 +110,21 @@ D3D12Util::ToResourceStates(ResourceState state)
     }
     default: {
       return static_cast<D3D12_RESOURCE_STATES>(UINT_MAX);
+    }
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+D3D12_PRIMITIVE_TOPOLOGY
+D3D12Util::ToPrimitiveTopology(PrimitiveTopology topology)
+{
+  switch (topology) {
+    case PrimitiveTopology::kTriangleList: {
+      return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    }
+    default: {
+      Panic("Invalid primitive topology");
     }
   }
 }

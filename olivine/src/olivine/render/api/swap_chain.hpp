@@ -175,6 +175,12 @@ public:
    */
   void DisableVerticalSync() { mVerticalSync = false; }
 
+  /** Returns the buffer format for the swap chain.
+   * \brief Returns buffer format.
+   * \return Buffer format.
+   */
+  Format GetFormat() const { return mFormat; }
+
   /** Set the name of the swap chain.
    * \brief Set name.
    * \param name Name to set.

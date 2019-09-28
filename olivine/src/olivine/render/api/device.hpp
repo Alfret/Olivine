@@ -68,6 +68,30 @@ public:
     SelectionCriterion selectionCriterion = SelectionCriterion::kDefault;
   };
 
+  /* VRS feature levels */
+  enum class TierVRS
+  {
+    /* No support for variable rate shading */
+    kNoSupport,
+    /* Support tier 1 */
+    kTier1,
+    /* Support tier 2 */
+    kTier2,
+  };
+
+  /* Features structure */
+  struct Features
+  {
+    /* Ray-tracing support */
+    bool rayTracing;
+    /* Variable-rate shading support */
+    struct
+    {
+      /* Support tier */
+      TierVRS tier;
+    } vrs;
+  };
+
 private:
   /* Device handle */
   ID3D12Device4* mHandle = nullptr;
@@ -76,6 +100,9 @@ private:
 
   /* Allocator */
   D3D12MA::Allocator* mAllocator;
+
+  /* Device features */
+  Features mFeatures;
 
 public:
   /** Create a device from a set of creation information.
@@ -97,6 +124,13 @@ public:
    * \brief Destroy device.
    */
   ~Device();
+
+  /** Returns a structure that can be used to determine what feature support the
+   * device has.
+   * \brief Returns device features.
+   * \return Device features.
+   */
+  const Features& GetFeatures() const { return mFeatures; }
 
   /** Returns the handle of the D3D12 device.
    * \brief Returns handle.

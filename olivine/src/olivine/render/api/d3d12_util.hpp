@@ -50,6 +50,7 @@ namespace olivine {
 OL_FORWARD_DECLARE(String);
 OL_FORWARD_DECLARE_ENUM(HeapKind : u32);
 OL_FORWARD_DECLARE_ENUM(ResourceState : u32);
+OL_FORWARD_DECLARE_ENUM(PrimitiveTopology : u32);
 
 /** \class D3D12Util
  * \author Filip Björklund
@@ -83,6 +84,14 @@ public:
    * \return Converted state.
    */
   static D3D12_RESOURCE_STATES ToResourceStates(ResourceState state);
+
+  /** Convert from 'PrimitiveTopology' to 'D3D12_PRIMITIVE_TOPOLOGY'.
+   * \brief Convert to primitive topology.
+   * \param topology Primitive topology to convert.
+   * \return Converted primitive topology.
+   */
+  static D3D12_PRIMITIVE_TOPOLOGY ToPrimitiveTopology(
+    PrimitiveTopology topology);
 
   /** Set the name of a IDXGIObject.
    * \brief Set IDXGIObject name.

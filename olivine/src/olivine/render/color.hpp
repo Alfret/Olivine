@@ -69,6 +69,11 @@ private:
   u8 mRed, mGreen, mBlue, mAlpha;
 
 public:
+  /** Construct a default color. The color will be white.
+   * \brief Construct default color.
+   */
+  Color();
+
   /** Construct color **/
   Color(u32 red, u32 green, u32 blue, u32 alpha = u32(kColorMax)) noexcept;
 

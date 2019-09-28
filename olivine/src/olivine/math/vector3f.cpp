@@ -163,8 +163,8 @@ Vector3F::Cross(const Vector3F& other)
 f32
 Vector3F::Length() const
 {
-  return sqrt(mData.GetX() * mData.GetX() + mData.GetY() * mData.GetY() +
-              mData.GetZ() * mData.GetZ());
+  return sqrtf(mData.GetX() * mData.GetX() + mData.GetY() * mData.GetY() +
+               mData.GetZ() * mData.GetZ());
 }
 
 // -------------------------------------------------------------------------- //

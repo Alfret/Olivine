@@ -30,6 +30,7 @@
 #include <olivine/render/api/root_signature.hpp>
 #include <olivine/render/api/pipeline_state.hpp>
 #include <olivine/render/api/vertex_buffer.hpp>
+#include <olivine/render/api/index_buffer.hpp>
 #include <olivine/math/vector3f.hpp>
 
 // ========================================================================== //
@@ -66,7 +67,7 @@ private:
   /* Frame resources */
   Frame mFrames[SwapChain::kBufferCount];
   /* Clear color */
-  Color mClearColor = Color::FromHex(0xE5E5E5FF);
+  Color mClearColor = Color::FromHex(0x451e3eff);
 
   /* Root signature */
   RootSignature* mRootSignature = nullptr;
@@ -75,6 +76,8 @@ private:
 
   /* Vertex buffer */
   VertexBuffer* mVertexBuffer = nullptr;
+  /* Index buffer */
+  IndexBuffer* mIndexBuffer = nullptr;
 
 public:
   /** Construct **/
@@ -96,8 +99,8 @@ public:
     pipelineStateInfo.rootSignature = mRootSignature;
     pipelineStateInfo.renderTargetFormats.push_back(
       GetSwapChain()->GetFormat());
-    pipelineStateInfo.vs = PipelineState::LoadShader(Path{ "res/tri_vs.cso" });
-    pipelineStateInfo.ps = PipelineState::LoadShader(Path{ "res/tri_ps.cso" });
+    pipelineStateInfo.vs = PipelineState::LoadShader(Path{ "res/tex_vs.cso" });
+    pipelineStateInfo.ps = PipelineState::LoadShader(Path{ "res/tex_ps.cso" });
     pipelineStateInfo.vertexAttributes = {
       PipelineState::VertexAttribute{
         "POSITION", 0, PipelineState::VertexAttributeKind::kFloat3 },
@@ -110,19 +113,30 @@ public:
     mPipelineState = new PipelineState(pipelineStateInfo);
 
     // Create vertex buffer
-    Vertex vertices[3];
-    vertices[0].pos = Vector3F{ -0.5f, -0.5f, 0.0f };
-    vertices[0].color = Color::FromHex(0x451e3eff);
-    vertices[1].pos = Vector3F{ 0.0f, 0.8f, 0.0f };
-    vertices[1].color = Color::FromHex(0x651e3eff);
-    vertices[2].pos = Vector3F{ 0.5f, -0.5f, 0.0f };
-    vertices[2].color = Color::FromHex(0x851e3eff);
+    Vertex vertices[4];
+    vertices[0].pos = Vector3F{ -0.5f, -0.89f, 0.0f };
+    vertices[0].color = Color::kWhite;
+    vertices[1].pos = Vector3F{ -0.5f, 0.89f, 0.0f };
+    vertices[1].color = Color::kWhite;
+    vertices[2].pos = Vector3F{ 0.5f, 0.89f, 0.0f };
+    vertices[2].color = Color::kWhite;
+    vertices[3].pos = Vector3F{ 0.5f, -0.89f, 0.0f };
+    vertices[3].color = Color::kWhite;
     VertexBuffer::CreateInfo vertexBufferInfo;
     vertexBufferInfo.size = sizeof vertices;
     vertexBufferInfo.stride = sizeof Vertex;
     vertexBufferInfo.heapKind = HeapKind::kUpload;
     mVertexBuffer = new VertexBuffer(vertexBufferInfo);
     mVertexBuffer->Write((u8*)vertices, sizeof vertices);
+
+    // Create index buffer
+    u16 indices[6] = { 0, 1, 2, 0, 2, 3 };
+    IndexBuffer::CreateInfo indexBufferInfo;
+    indexBufferInfo.count = 6;
+    indexBufferInfo.format = IndexBuffer::Format::kU16;
+    indexBufferInfo.heapKind = HeapKind::kUpload;
+    mIndexBuffer = new IndexBuffer(indexBufferInfo);
+    mIndexBuffer->Write(indices, 6);
   }
 
   /** Cleanup **/
@@ -133,6 +147,7 @@ public:
       delete frame.list;
       delete frame.sem;
     }
+    delete mIndexBuffer;
     delete mVertexBuffer;
     delete mPipelineState;
     delete mRootSignature;
@@ -161,7 +176,8 @@ public:
     frame.list->SetRootSignatureGraphics(mRootSignature);
     frame.list->SetPipelineState(mPipelineState);
     frame.list->SetVertexBuffer(mVertexBuffer);
-    frame.list->Draw(3);
+    frame.list->SetIndexBuffer(mIndexBuffer);
+    frame.list->DrawIndexed(6);
 
     frame.list->TransitionResource(
       buffer, ResourceState::kRenderTarget, ResourceState::kPresent);

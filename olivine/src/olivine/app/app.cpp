@@ -382,6 +382,14 @@ App::EntireViewport() const
 
 // -------------------------------------------------------------------------- //
 
+Rectangle
+App::EntireRectangle() const
+{
+  return Rectangle::Make(mWindow.width, mWindow.height);
+}
+
+// -------------------------------------------------------------------------- //
+
 void
 App::CenterWindow()
 {
@@ -515,6 +523,15 @@ App::MouseMotionCallbackGLFW(GLFWwindow* window, f64 xpos, f64 ypos)
 {
   auto app = static_cast<App*>(glfwGetWindowUserPointer(window));
   app->OnMouseMove(xpos, ypos);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+App::MouseScrollCallbackGLFW(GLFWwindow* window, double x, double y)
+{
+  auto app = static_cast<App*>(glfwGetWindowUserPointer(window));
+  app->OnMouseScroll(x, y);
 }
 
 }

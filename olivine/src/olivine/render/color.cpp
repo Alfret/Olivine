@@ -71,6 +71,15 @@ const Color Color::kCornflowerBlue{ 100u, 149u, 237u };
 
 // -------------------------------------------------------------------------- //
 
+Color::Color()
+  : mRed(kColorMax)
+  , mGreen(kColorMax)
+  , mBlue(kColorMax)
+  , mAlpha(kColorMax)
+{}
+
+// -------------------------------------------------------------------------- //
+
 Color::Color(u32 red, u32 green, u32 blue, u32 alpha) noexcept
   : mRed(Clamp(red, u32(0), u32(kColorMax)))
   , mGreen(Clamp(green, u32(0), u32(kColorMax)))

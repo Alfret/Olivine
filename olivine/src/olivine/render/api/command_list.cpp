@@ -31,6 +31,10 @@
 #include "olivine/render/api/device.hpp"
 #include "olivine/render/api/texture.hpp"
 #include "olivine/render/api/descriptor.hpp"
+#include "olivine/render/api/root_signature.hpp"
+#include "olivine/render/api/pipeline_state.hpp"
+#include "olivine/render/api/vertex_buffer.hpp"
+#include "olivine/render/api/index_buffer.hpp"
 #include "olivine/render/color.hpp"
 
 // ========================================================================== //
@@ -56,7 +60,7 @@ CommandList::CommandList(CommandQueue::Kind kind)
     CommandQueue::ToCommandListType(kind),
     mAllocator,
     nullptr,
-    __uuidof(ID3D12GraphicsCommandList),
+    __uuidof(ID3D12GraphicsCommandList4),
     reinterpret_cast<void**>(&mHandle));
   Assert(SUCCEEDED(hresult), "Failed to create command list");
   hresult = mHandle->Close();
@@ -99,7 +103,23 @@ CommandList::Close()
 // -------------------------------------------------------------------------- //
 
 void
-CommandList::TransitionResource(Texture* texture,
+CommandList::Draw(u32 vertexCount, u32 startVertex)
+{
+  mHandle->DrawInstanced(vertexCount, 1, startVertex, 0);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::DrawIndexed(u32 indexCount, u32 startIndex, u32 startVertex)
+{
+  mHandle->DrawIndexedInstanced(indexCount, 1, startIndex, startVertex, 0);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::TransitionResource(const Texture* texture,
                                 ResourceState from,
                                 ResourceState to)
 {
@@ -166,10 +186,73 @@ CommandList::SetScissorRectangle(Rectangle rectangle)
 // -------------------------------------------------------------------------- //
 
 void
+CommandList::SetPrimitiveTopology(PrimitiveTopology topology)
+{
+  mHandle->IASetPrimitiveTopology(D3D12Util::ToPrimitiveTopology(topology));
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetRootSignatureGraphics(const RootSignature* rootSignature)
+{
+  mHandle->SetGraphicsRootSignature(rootSignature->GetHandle());
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetRootSignatureCompute(const RootSignature* rootSignature)
+{
+  mHandle->SetComputeRootSignature(rootSignature->GetHandle());
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetPipelineState(const PipelineState* pipelineState)
+{
+  mHandle->SetPipelineState(pipelineState->GetHandle());
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetVertexBuffer(const VertexBuffer* vertexBuffer, u32 slot)
+{
+  D3D12_VERTEX_BUFFER_VIEW views[] = { vertexBuffer->GetView().handle };
+  mHandle->IASetVertexBuffers(UINT(slot), 1, views);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetVertexBuffers(const VertexBuffer* const* vertexBuffers,
+                              u32 count,
+                              u32 startSlot)
+{
+  Assert(count <= kMaxBindVertexBuffer, "Too many vertex buffers specified");
+  D3D12_VERTEX_BUFFER_VIEW views[kMaxBindVertexBuffer];
+  for (u32 i = 0; i < count; i++) {
+    views[i] = vertexBuffers[i]->GetView().handle;
+  }
+  mHandle->IASetVertexBuffers(UINT(startSlot), UINT(count), views);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetIndexBuffer(const IndexBuffer* indexBuffer)
+{
+  mHandle->IASetIndexBuffer(&indexBuffer->GetView().handle);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
 CommandList::SetName(const String& name)
 {
   D3D12Util::SetName(mHandle, name);
   D3D12Util::SetName(mAllocator, name + "Allocator");
 }
-
 }

@@ -58,10 +58,15 @@ Device::Init(const CreateInfo& createInfo)
   D3D12Util::SetName(mAdapter, "DeviceAdapter");
 
   // Create device
-  HRESULT hresult = D3D12CreateDevice(mAdapter,
-                                      D3D_FEATURE_LEVEL_12_0,
-                                      __uuidof(ID3D12Device4),
-                                      reinterpret_cast<void**>(&mHandle));
+  HRESULT hresult = S_OK;
+  try {
+    hresult = D3D12CreateDevice(mAdapter,
+                                D3D_FEATURE_LEVEL_12_0,
+                                __uuidof(ID3D12Device4),
+                                reinterpret_cast<void**>(&mHandle));
+  } catch (std::exception e) {
+    Assert(false, "Device creation threw an exception ({})", e.what());
+  }
   Assert(SUCCEEDED(hresult), "Failed to create device");
   D3D12Util::SetName(mHandle, "Device");
 
@@ -71,6 +76,31 @@ Device::Init(const CreateInfo& createInfo)
   allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_NONE;
   hresult = D3D12MA::CreateAllocator(&allocatorDesc, &mAllocator);
   Assert(SUCCEEDED(hresult), "Failed to create device allocator");
+
+  // Check ray-tracing support
+  D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
+  hresult = mHandle->CheckFeatureSupport(
+    D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof options5);
+  mFeatures.rayTracing = false;
+  if (SUCCEEDED(hresult)) {
+    mFeatures.rayTracing =
+      options5.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+  }
+
+  // Check ray-tracing support
+  D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6;
+  hresult = mHandle->CheckFeatureSupport(
+    D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof options6);
+  mFeatures.vrs.tier = TierVRS::kNoSupport;
+  if (SUCCEEDED(hresult)) {
+    if (options6.VariableShadingRateTier ==
+        D3D12_VARIABLE_SHADING_RATE_TIER_1) {
+      mFeatures.vrs.tier = TierVRS::kTier1;
+    } else if (options6.VariableShadingRateTier ==
+               D3D12_VARIABLE_SHADING_RATE_TIER_2) {
+      mFeatures.vrs.tier = TierVRS::kTier2;
+    }
+  }
 }
 
 // -------------------------------------------------------------------------- //
@@ -103,8 +133,23 @@ Device::EnumerateAdapters()
   UINT index = 0;
   while (ctx->GetFactory()->EnumAdapters1(index++, &adapter) !=
          DXGI_ERROR_NOT_FOUND) {
+    // Make sure that it's not a software adapter and that D3D12 is supported
+    DXGI_ADAPTER_DESC1 adapterDesc;
+    adapter->GetDesc1(&adapterDesc);
+    if (adapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+      adapter->Release();
+      continue;
+    }
+    if (FAILED(D3D12CreateDevice(
+          adapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device4), nullptr))) {
+      adapter->Release();
+      continue;
+    }
+
+    // Add adapter to list
     adapters.Append(adapter);
   }
+  Assert(adapters.GetSize() > 0, "Failed to enumerate adapters");
   return adapters;
 }
 

@@ -41,20 +41,29 @@ OL_FORWARD_DECLARE(Descriptor);
 OL_FORWARD_DECLARE(Color);
 OL_FORWARD_DECLARE(Viewport);
 OL_FORWARD_DECLARE(Rectangle);
+OL_FORWARD_DECLARE(RootSignature);
+OL_FORWARD_DECLARE(PipelineState);
+OL_FORWARD_DECLARE(VertexBuffer);
+OL_FORWARD_DECLARE(IndexBuffer);
+OL_FORWARD_DECLARE_ENUM(PrimitiveTopology : u32);
 
 /** \class CommandList
  * \author Filip Björklund
  * \date 26 september 2019 - 12:07
  * \brief
  * \details
- * Represents a command list for recording commands that can later be submitted
- * for execution on the GPU.
+ * Represents a command list for recording commands that can later be
+ * submitted for execution on the GPU.
  */
 class CommandList
 {
+public:
+  /* Maximum number of vertex buffers that can be bound with the same call */
+  static constexpr u32 kMaxBindVertexBuffer = 16;
+
 private:
   /* List handle */
-  ID3D12GraphicsCommandList* mHandle;
+  ID3D12GraphicsCommandList4* mHandle;
   /* Command allocator */
   ID3D12CommandAllocator* mAllocator;
 
@@ -86,13 +95,32 @@ public:
    */
   void Close();
 
+  /** Record a draw call for rendering the specified number of vertices from the
+   * bound vertex buffer. The first vertex to read from the stream can also be
+   * specified.
+   * \brief Draw.
+   * \param vertexCount Number of vertices to draw.
+   * \param startVertex First vertex to draw.
+   */
+  void Draw(u32 vertexCount, u32 startVertex = 0);
+
+  /** Record a draw call for rendering the specified number of indexed vertices
+   * from the bound vertex and index buffers. The first instance and vertex to
+   * draw can be specifed.
+   * \brief Draw indexed.
+   * \param indexCount Number of indices to draw with.
+   * \param startIndex First index to draw.
+   * \param startVertex First vertex to draw.
+   */
+  void DrawIndexed(u32 indexCount, u32 startIndex = 0, u32 startVertex = 0);
+
   /** Transition a resource between the states 'from' and 'to'.
    * \brief Transition resource state.
    * \param texture Texture to transition.
    * \param from State to transition from.
    * \param to State to transition to.
    */
-  void TransitionResource(Texture* texture,
+  void TransitionResource(const Texture* texture,
                           ResourceState from,
                           ResourceState to);
 
@@ -120,6 +148,56 @@ public:
    * \brief rectangle Scissor rectangle to set.
    */
   void SetScissorRectangle(Rectangle rectangle);
+
+  /** Set the primitive topology for the following draw commands.
+   * \brief Set primitive topology.
+   * \param topology Primitive topology to set.
+   */
+  void SetPrimitiveTopology(PrimitiveTopology topology);
+
+  /** Set the root signature for use with the graphics pipeline.
+   * \brief Set graphics root signature.
+   * \param rootSignature Root signature to set.
+   */
+  void SetRootSignatureGraphics(const RootSignature* rootSignature);
+
+  /** Set the root signature for use with the compute pipeline.
+   * \brief Set compute root signature.
+   * \param rootSignature Root signature to set.
+   */
+  void SetRootSignatureCompute(const RootSignature* rootSignature);
+
+  /** Set the pipeline state.
+   * \brief Set pipeline state.
+   * \param pipelineState Pipeline state to set.
+   */
+  void SetPipelineState(const PipelineState* pipelineState);
+
+  /** Set the vertex buffer.
+   * \brief Set vertex buffer.
+   * \param vertexBuffer Vertex buffer to set.
+   * \param slot Slot to bind vertex buffer at.
+   */
+  void SetVertexBuffer(const VertexBuffer* vertexBuffer, u32 slot = 0);
+
+  /** Set multiple vertex buffers.
+   * \brief If more than 'kMaxBindVertexBuffer' vertex buffers must be set, then
+   * multiple calls can be made with different starting slots.
+   * \brief Set vertex buffers.
+   * \param vertexBuffers Vertex buffers to set.
+   * \param count Number of vertex buffer to set. Maximum value is
+   * kMaxBindVertexBuffer.
+   * \param startSlot Starting slot to bind vertex buffers from.
+   */
+  void SetVertexBuffers(const VertexBuffer* const* vertexBuffers,
+                        u32 count,
+                        u32 startSlot = 0);
+
+  /** Set the index buffer.
+   * \brief Set index buffer.
+   * \param indexBuffer Index buffer to set.
+   */
+  void SetIndexBuffer(const IndexBuffer* indexBuffer);
 
   /** Returns the kind of the command list.
    * \brief Returns the kind.

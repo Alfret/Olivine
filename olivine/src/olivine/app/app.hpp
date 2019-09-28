@@ -47,6 +47,7 @@ OL_FORWARD_DECLARE(Device);
 OL_FORWARD_DECLARE(CommandQueue);
 OL_FORWARD_DECLARE(SwapChain);
 OL_FORWARD_DECLARE(Viewport);
+OL_FORWARD_DECLARE(Rectangle);
 
 /** \class App
  * \author Filip Björklund
@@ -267,6 +268,14 @@ public:
    */
   virtual void OnMouseMove(f64 x, f64 y) {}
 
+  /** Called when the mouse scroll wheel has scrolled (or trackpad gesture).
+   * \brief Most mice only supports scrolling in the y axis.
+   * \brief Called on mouse scroll.
+   * \param deltaX Movement in x axis
+   * \param deltaY Movement in y axis
+   */
+  virtual void OnMouseScroll(f64 deltaX, f64 deltaY) {}
+
   /** Returns whether or not a gamepad is connected with the specified index
    * in the gamepad list.
    * \brief Returns whether gamepad is connected.
@@ -364,6 +373,13 @@ public:
    */
   Viewport EntireViewport() const;
 
+  /** Returns a rectangle that represents the entire window.
+   * \note This exists to make setting the scissor rectangle easier.
+   * \brief Returns full rectangle.
+   * \return Rectangle.
+   */
+  Rectangle EntireRectangle() const;
+
 private:
   /** Center the app window **/
   void CenterWindow();
@@ -399,6 +415,9 @@ private:
 
   /** GLFW mouse move callback **/
   static void MouseMotionCallbackGLFW(GLFWwindow* window, f64 xpos, f64 ypos);
+
+  /** GLFW mouse scroll callback **/
+  static void MouseScrollCallbackGLFW(GLFWwindow* window, double x, double y);
 };
 
 }
