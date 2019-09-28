@@ -73,7 +73,7 @@ public:
   {
     /** Size in bytes**/
     u64 size = 0;
-    /** Alignment in bytes **/
+    /** Alignment in bytes. Must be a power of two **/
     u32 alignment = kDefaultAlign;
     /** Usages for buffer **/
     Usage usages = Usage::kNone;
@@ -87,8 +87,10 @@ private:
   /* Allocation */
   D3D12MA::Allocation* mAllocation = nullptr;
 
-  /* Size of the buffer in bytes */
+  /* Size in bytes */
   u64 mSize;
+  /* Alignment in bytes */
+  u64 mAlignment;
 
 public:
   /** Construct a buffer from a creation information structure.
@@ -121,7 +123,7 @@ public:
    * \brief Map buffer.
    * \return Pointer to mapped buffer memory.
    */
-  void* Map();
+  u8* Map();
 
   /** Unmap buffer that was previously mapped to a CPU accessible memory range.
    * \note This expects to be called after a call to 'Map'.
@@ -139,9 +141,15 @@ public:
 
   /** Returns the size of the buffer in bytes.
    * \brief Returns size.
-   * \return Size in bytes of buffer.
+   * \return Size in bytes.
    */
   u64 GetSize() const { return mSize; }
+
+  /** Returns the alignment of the buffer in bytes.
+   * \brief Returns alignment.
+   * \return Alignment in bytes.
+   */
+  u64 GetAlignment() const { return mAlignment; }
 
   /** Set the name of the buffer.
    * \brief Set name.

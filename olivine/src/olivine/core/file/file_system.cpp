@@ -312,8 +312,11 @@ FileSystem::GetSize(const Path& path)
 {
   WIN32_FILE_ATTRIBUTE_DATA attributes;
   RetrieveFileAttributeData(path, attributes);
-  const u64 sizeHigh = (uint64_t)attributes.nFileSizeHigh << sizeof(DWORD);
-  const u64 sizeLow = attributes.nFileSizeLow;
-  return sizeLow | sizeHigh;
+  if (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
+    const u64 sizeHigh = (uint64_t)attributes.nFileSizeHigh << sizeof(DWORD);
+    const u64 sizeLow = attributes.nFileSizeLow;
+    return sizeLow | sizeHigh;
+  }
+  return 0;
 }
 }

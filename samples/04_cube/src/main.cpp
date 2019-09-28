@@ -65,15 +65,13 @@ public:
     Vector3F pos;
     /* Color */
     Color color;
-    /* Texture coordinates */
-    Vector2F uv;
   };
 
 private:
   /* Frame resources */
   Frame mFrames[SwapChain::kBufferCount];
   /* Clear color */
-  Color mClearColor = Color::FromHex(0x451e3eff);
+  Color mClearColor = Color::FromHex(0x80bb01ff);
 
   /* Command list for uploading */
   CommandList* mUploadList;
@@ -87,11 +85,6 @@ private:
   VertexBuffer* mVertexBuffer = nullptr;
   /* Index buffer */
   IndexBuffer* mIndexBuffer = nullptr;
-
-  /* Texture */
-  Texture* mTexture = nullptr;
-  /* SRV heap */
-  DescriptorHeap* mHeapSRV = nullptr;
 
 public:
   /** Construct **/
@@ -107,19 +100,6 @@ public:
 
     // Create root signature
     RootSignature::CreateInfo rootSignatureInfo;
-    RootSignature::RootTableRange rootTableRange0 =
-      RootSignature::RootTableRange{
-        RootSignature::RootDescriptorKind::kSrv, 1, 0, 0
-      };
-    RootSignature::RootTable rootTable;
-    rootTable.ranges = { rootTableRange0 };
-    rootSignatureInfo.parameters.push_back(
-      RootSignature::RootParameter(rootTable, ShaderStage::kPixel));
-    RootSignature::StaticSampler staticSampler0;
-    staticSampler0.reg = 0;
-    staticSampler0.accessibleStages = ShaderStage::kPixel;
-    staticSampler0.magFilter = Sampler::Filter::kLinear;
-    rootSignatureInfo.staticSamplers.push_back(staticSampler0);
     mRootSignature = new RootSignature(rootSignatureInfo);
 
     // Create pipeline state
@@ -128,8 +108,8 @@ public:
     pipelineStateInfo.rootSignature = mRootSignature;
     pipelineStateInfo.renderTargetFormats.push_back(
       GetSwapChain()->GetFormat());
-    pipelineStateInfo.vs = PipelineState::LoadShader(Path{ "res/tex_vs.cso" });
-    pipelineStateInfo.ps = PipelineState::LoadShader(Path{ "res/tex_ps.cso" });
+    pipelineStateInfo.vs = PipelineState::LoadShader(Path{ "res/cube_vs.cso" });
+    pipelineStateInfo.ps = PipelineState::LoadShader(Path{ "res/cube_ps.cso" });
     pipelineStateInfo.vertexAttributes = {
       PipelineState::VertexAttribute{
         "POSITION", 0, PipelineState::VertexAttributeKind::kFloat3 },
@@ -137,12 +117,7 @@ public:
         "COLOR",
         0,
         PipelineState::VertexAttributeKind::kByte4,
-        offsetof(Vertex, color) },
-      PipelineState::VertexAttribute{
-        "TEXCOORD",
-        0,
-        PipelineState::VertexAttributeKind::kFloat2,
-        offsetof(Vertex, uv) }
+        offsetof(Vertex, color) }
     };
     mPipelineState = new PipelineState(pipelineStateInfo);
     mPipelineState->SetName("MainPipelineState");
@@ -150,22 +125,16 @@ public:
     // Create upload command list
     mUploadList = new CommandList(CommandQueue::Kind::kCopy);
 
-    // 0.5 0.89
-
     // Create vertex buffer
     Vertex vertices[4];
-    vertices[0].pos = Vector3F{ -1.0f, -1.0f, 0.0f };
+    vertices[0].pos = Vector3F{ -0.28f, -0.5f, 0.0f };
     vertices[0].color = Color::kWhite;
-    vertices[0].uv = Vector2F{ 0.0, 1.0f };
-    vertices[1].pos = Vector3F{ -1.0f, 1.0f, 0.0f };
+    vertices[1].pos = Vector3F{ -0.28f, 0.5f, 0.0f };
     vertices[1].color = Color::kWhite;
-    vertices[1].uv = Vector2F{ 0.0, 0.0f };
-    vertices[2].pos = Vector3F{ 1.0f, 1.0f, 0.0f };
+    vertices[2].pos = Vector3F{ 0.28f, 0.5f, 0.0f };
     vertices[2].color = Color::kWhite;
-    vertices[2].uv = Vector2F{ 1.0, 0.0f };
-    vertices[3].pos = Vector3F{ 1.0f, -1.0f, 0.0f };
+    vertices[3].pos = Vector3F{ 0.28f, -0.5f, 0.0f };
     vertices[3].color = Color::kWhite;
-    vertices[3].uv = Vector2F{ 1.0, 1.0f };
     VertexBuffer::CreateInfo vertexBufferInfo;
     vertexBufferInfo.size = sizeof vertices;
     vertexBufferInfo.stride = sizeof Vertex;
@@ -183,26 +152,6 @@ public:
     mIndexBuffer = new IndexBuffer(indexBufferInfo);
     mIndexBuffer->Write(indices, 6);
     mIndexBuffer->SetName("MainIndexBuffer");
-
-    // Create and upload texture
-    Image image;
-    Image::Result imageResult = image.Load({ "res/texture.png" });
-    Assert(imageResult == Image::Result::kSuccess, "Failed to load image");
-    Texture::CreateInfo textureInfo;
-    textureInfo.width = image.GetWidth();
-    textureInfo.height = image.GetHeight();
-    textureInfo.dimension = Texture::Dim::k2D;
-    textureInfo.format = Format::kR8G8B8A8Unorm;
-    textureInfo.usages = Texture::Usage::kShaderResource;
-    textureInfo.heapKind = HeapKind::kDefault;
-    mTexture = new Texture(textureInfo);
-    mTexture->SetName("MainTexture");
-    UploadManager::Upload(GetCopyQueue(), mUploadList, mTexture, &image);
-
-    // Create SRV heap
-    mHeapSRV = new DescriptorHeap(Descriptor::Kind::kCbvSrvUav, 1, true);
-    mHeapSRV->WriteDescriptorSRV(0, mTexture);
-    mHeapSRV->SetName("MainShaderResourceHeap");
   }
 
   /** Cleanup **/
@@ -213,8 +162,6 @@ public:
       delete frame.list;
       delete frame.sem;
     }
-    delete mHeapSRV;
-    delete mTexture;
     delete mIndexBuffer;
     delete mVertexBuffer;
     delete mPipelineState;
@@ -246,8 +193,6 @@ public:
     frame.list->SetPipelineState(mPipelineState);
     frame.list->SetVertexBuffer(mVertexBuffer);
     frame.list->SetIndexBuffer(mIndexBuffer);
-    frame.list->SetDescriptorHeap(mHeapSRV);
-    frame.list->SetRootDescriptorTableGraphics(0, mHeapSRV->At(0));
     frame.list->DrawIndexed(6);
 
     frame.list->TransitionResource(
@@ -272,7 +217,7 @@ main()
 {
   // Create app
   App::CreateInfo appInfo{};
-  appInfo.title = "03 - Texturing";
+  appInfo.title = "04 - Cube";
   appInfo.window.width = 800;
   appInfo.window.height = 450;
   appInfo.flags = App::Flag::kExitOnEscape;

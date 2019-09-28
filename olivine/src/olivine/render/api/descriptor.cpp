@@ -77,9 +77,12 @@ Descriptor::ToDescriptorType(Kind kind)
 
 namespace olivine {
 
-DescriptorHeap::DescriptorHeap(Descriptor::Kind kind, u32 count)
+DescriptorHeap::DescriptorHeap(Descriptor::Kind kind,
+                               u32 count,
+                               bool shaderVisible)
   : mKind(kind)
   , mCount(count)
+  , mIsShaderVisible(shaderVisible)
 {
   Device* device = App::Instance()->GetDevice();
 
@@ -87,7 +90,8 @@ DescriptorHeap::DescriptorHeap(Descriptor::Kind kind, u32 count)
   D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
   heapDesc.Type = Descriptor::ToDescriptorType(mKind);
   heapDesc.NumDescriptors = mCount;
-  heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+  heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+                                 : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
   heapDesc.NodeMask = 0x00;
 
   // Create descriptor heap
@@ -137,6 +141,45 @@ DescriptorHeap::WriteDescriptorRTV(u32 index, Texture* texture, Format format)
   rtvDesc.Texture2D.PlaneSlice = 0;
   device->GetHandle()->CreateRenderTargetView(
     texture->GetResource(), &rtvDesc, cpuHandle);
+
+  // Retrieve GPU handle (Might be 0)
+  D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle =
+    mHandle->GetGPUDescriptorHandleForHeapStart();
+  gpuHandle.ptr += (u64(mHandleSize) * u64(index));
+
+  // Return descriptor
+  return Descriptor(mKind, cpuHandle, gpuHandle);
+}
+
+// -------------------------------------------------------------------------- //
+
+Descriptor
+DescriptorHeap::WriteDescriptorSRV(u32 index, Texture* texture, Format format)
+{
+  Device* device = App::Instance()->GetDevice();
+
+  // If format is 'invalid' then set to texture
+  if (format == Format::kInvalid) {
+    format = texture->GetFormat();
+  }
+
+  // Retrieve CPU handle
+  D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle =
+    mHandle->GetCPUDescriptorHandleForHeapStart();
+  cpuHandle.ptr += (u64(mHandleSize) * u64(index));
+
+  // Create view
+  D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+  srvDesc.Format = D3D12Util::ToDXGIFormat(format);
+  srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+  srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+  srvDesc.Texture2D.MostDetailedMip = 0;
+  srvDesc.Texture2D.MipLevels = 1;
+  srvDesc.Texture2D.PlaneSlice = 0;
+  srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+  device->GetHandle()->CreateShaderResourceView(
+    texture->GetResource(), &srvDesc, cpuHandle);
 
   // Retrieve GPU handle (Might be 0)
   D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle =

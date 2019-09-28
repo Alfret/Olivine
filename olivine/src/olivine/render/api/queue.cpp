@@ -94,6 +94,30 @@ CommandQueue::SignalSemaphore(Semaphore* semaphore, u64 value) const
 // -------------------------------------------------------------------------- //
 
 void
+CommandQueue::WaitSemaphore(Semaphore* semaphore, u64 value) const
+{
+  const HRESULT hresult = mHandle->Wait(semaphore->GetHandle(), value);
+  Assert(SUCCEEDED(hresult), "Failed to submit command to wait on semaphore");
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandQueue::Upload(CommandList* list,
+                     Texture* dst,
+                     Buffer* src,
+                     u64 srcOffset)
+{
+  list->Reset();
+  list->Copy(dst, src, srcOffset);
+  list->Close();
+  Submit(list);
+  Flush();
+}
+
+// -------------------------------------------------------------------------- //
+
+void
 CommandQueue::Flush()
 {
   const u64 nextValue = mSemaphore.GetValue() + 1;

@@ -165,6 +165,42 @@ enum class PrimitiveTopology : u32
 }
 
 // ========================================================================== //
+// ComparisonFunction
+// ========================================================================== //
+
+namespace olivine {
+
+/** \class ComparisonFunction
+ * \author Filip Björklund
+ * \date 28 september 2019 - 18:45
+ * \brief Comparison functions.
+ * \details
+ * Enumeration of comparison functions.
+ */
+enum class ComparisonFunction : u32
+{
+  /* Comparisons never pass */
+  kNever,
+  /* Comparisons always pass */
+  kAlways,
+  /* Comparisons pass if the source is less than the destination */
+  kLess,
+  /* Comparisons pass if the source is greater than the destination */
+  kGreater,
+  /* Comparisons pass if the source is less than or equal to the destination */
+  kLessEqual,
+  /* Comparisons pass if the source is greater than or equal to the
+   * destination */
+  kGreaterEqual,
+  /* Comparison pass if the source and destination are equal */
+  kEqual,
+  /* Comparison pass if the source and destination are not equal */
+  kNotEqual,
+};
+
+}
+
+// ========================================================================== //
 // Viewport Declaration
 // ========================================================================== //
 

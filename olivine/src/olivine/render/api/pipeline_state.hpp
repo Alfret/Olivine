@@ -148,6 +148,12 @@ public:
    */
   ~PipelineState();
 
+  /** Set the name of the pipeline state.
+   * \brief Set the name.
+   * \param name Name to set.
+   */
+  void SetName(const String& name);
+
   /** Returns the handle for the pipeline state.
    * \brief Returns handle.
    * \return Handle.

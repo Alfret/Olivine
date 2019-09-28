@@ -27,15 +27,38 @@
 // ========================================================================== //
 
 // Project headers
+#include "olivine/app/app.hpp"
 #include "olivine/core/string.hpp"
 #include "olivine/core/assert.hpp"
 #include "olivine/render/api/common.hpp"
+#include "olivine/render/api/device.hpp"
 
 // ========================================================================== //
 // D3D12Util Implementation
 // ========================================================================== //
 
 namespace olivine {
+
+void
+D3D12Util::Assert(HRESULT hresult, const String& message)
+{
+  // Return if success
+  if (SUCCEEDED(hresult)) {
+    return;
+  }
+
+  // Otherwise assert (with added device-removed reason
+  if (hresult == DXGI_ERROR_DEVICE_REMOVED) {
+    Device* device = App::Instance()->GetDevice();
+    const HRESULT reason = device->GetHandle()->GetDeviceRemovedReason();
+    olivine::Assert(
+      SUCCEEDED(hresult), "{} (reason: {:#x})", message, u32(reason));
+  } else {
+    olivine::Assert(SUCCEEDED(hresult), "{}", message);
+  }
+}
+
+// -------------------------------------------------------------------------- //
 
 DXGI_FORMAT
 D3D12Util::ToDXGIFormat(Format format)
@@ -125,6 +148,42 @@ D3D12Util::ToPrimitiveTopology(PrimitiveTopology topology)
     }
     default: {
       Panic("Invalid primitive topology");
+    }
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+D3D12_COMPARISON_FUNC
+D3D12Util::ToComparisonFunc(ComparisonFunction func)
+{
+  switch (func) {
+    case ComparisonFunction::kNever: {
+      return D3D12_COMPARISON_FUNC_NEVER;
+    }
+    case ComparisonFunction::kAlways: {
+      return D3D12_COMPARISON_FUNC_ALWAYS;
+    }
+    case ComparisonFunction::kLess: {
+      return D3D12_COMPARISON_FUNC_LESS;
+    }
+    case ComparisonFunction::kGreater: {
+      return D3D12_COMPARISON_FUNC_GREATER;
+    }
+    case ComparisonFunction::kLessEqual: {
+      return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    }
+    case ComparisonFunction::kGreaterEqual: {
+      return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+    }
+    case ComparisonFunction::kEqual: {
+      return D3D12_COMPARISON_FUNC_EQUAL;
+    }
+    case ComparisonFunction::kNotEqual: {
+      return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+    }
+    default: {
+      Panic("Invalid comparison function");
     }
   }
 }

@@ -87,7 +87,7 @@ SwapChain::SwapChain(const CreateInfo& createInfo)
     nullptr,
     nullptr,
     reinterpret_cast<IDXGISwapChain1**>(&mHandle));
-  Assert(SUCCEEDED(hresult), "Failed to create swap chain");
+  D3D12Util::Assert(hresult, "Failed to create swap chain");
 
   // Retrieve frame index
   mIndex = mHandle->GetCurrentBackBufferIndex();
@@ -123,7 +123,7 @@ SwapChain::Present()
 {
   // Present
   const HRESULT hresult = mHandle->Present(mVerticalSync ? 1 : 0, 0);
-  Assert(SUCCEEDED(hresult), "Failed to present swap chain");
+  D3D12Util::Assert(hresult, "Failed to present swap chain");
 
   // Retrieve next index
   mIndex = mHandle->GetCurrentBackBufferIndex();
@@ -147,7 +147,7 @@ SwapChain::Resize(u32 width, u32 height)
   mHeight = height;
   const HRESULT hresult =
     mHandle->ResizeBuffers(kBufferCount, width, height, mFormatDXGI, mFlags);
-  Assert(SUCCEEDED(hresult), "Failed to resize swap chain buffers");
+  D3D12Util::Assert(hresult, "Failed to resize swap chain buffers");
 
   // Setup images and index
   SetupBuffers();

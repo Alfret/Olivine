@@ -44,6 +44,7 @@
 namespace olivine {
 
 CommandList::CommandList(CommandQueue::Kind kind)
+  : mKind(kind)
 {
   Device* device = App::Instance()->GetDevice();
 
@@ -131,6 +132,56 @@ CommandList::TransitionResource(const Texture* texture,
   barrier.Transition.StateBefore = D3D12Util::ToResourceStates(from);
   barrier.Transition.StateAfter = D3D12Util::ToResourceStates(to);
   mHandle->ResourceBarrier(1, &barrier);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::Copy(Buffer* dst,
+                  Buffer* src,
+                  u64 size,
+                  u64 dstOffset,
+                  u64 srcOffset)
+{
+  // Determine size
+  if (size == 0) {
+    size = Min(dst->GetSize(), src->GetSize());
+  }
+
+  // Copy data
+  mHandle->CopyBufferRegion(
+    dst->GetResource(), dstOffset, src->GetResource(), srcOffset, size);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::Copy(Texture* dst, Buffer* src, u64 srcOffset)
+{
+  Device* device = App::Instance()->GetDevice();
+
+  // Retrieve resource desc
+  ID3D12Resource* resource = dst->GetResource();
+  D3D12_RESOURCE_DESC resourceDesc = resource->GetDesc();
+
+  // Get the copyable footprint
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
+  UINT64 rowSizeInBytes;
+  UINT numRows;
+  UINT64 totalBytes;
+  device->GetHandle()->GetCopyableFootprints(
+    &resourceDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
+
+  // Copy texture regions
+  D3D12_TEXTURE_COPY_LOCATION _dst, _src;
+  _dst.pResource = dst->GetResource();
+  _dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  _dst.SubresourceIndex = 0;
+  _src.pResource = src->GetResource();
+  _src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  _src.PlacedFootprint.Offset = srcOffset;
+  _src.PlacedFootprint = footprint;
+  mHandle->CopyTextureRegion(&_dst, 0, 0, 0, &_src, nullptr);
 }
 
 // -------------------------------------------------------------------------- //
@@ -231,8 +282,8 @@ CommandList::SetVertexBuffers(const VertexBuffer* const* vertexBuffers,
                               u32 count,
                               u32 startSlot)
 {
-  Assert(count <= kMaxBindVertexBuffer, "Too many vertex buffers specified");
-  D3D12_VERTEX_BUFFER_VIEW views[kMaxBindVertexBuffer];
+  Assert(count <= kMaxBoundVertexBuffer, "Too many vertex buffers specified");
+  D3D12_VERTEX_BUFFER_VIEW views[kMaxBoundVertexBuffer];
   for (u32 i = 0; i < count; i++) {
     views[i] = vertexBuffers[i]->GetView().handle;
   }
@@ -250,9 +301,51 @@ CommandList::SetIndexBuffer(const IndexBuffer* indexBuffer)
 // -------------------------------------------------------------------------- //
 
 void
+CommandList::SetDescriptorHeap(const DescriptorHeap* heap)
+{
+  ID3D12DescriptorHeap* _heap[1] = { heap->GetHandle() };
+  mHandle->SetDescriptorHeaps(1, _heap);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetDescriptorHeaps(const DescriptorHeap* const* heaps, u32 count)
+{
+  Assert(count <= kMaxBoundDescriptorHeaps,
+         "At most two (2) descriptor heaps can be bound at one time");
+  ID3D12DescriptorHeap* _heaps[kMaxBoundDescriptorHeaps];
+  for (u32 i = 0; i < count; i++) {
+    _heaps[i] = heaps[i]->GetHandle();
+  }
+  mHandle->SetDescriptorHeaps(count, _heaps);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetRootDescriptorTableGraphics(u32 paramIndex,
+                                            Descriptor baseDescriptor)
+{
+  mHandle->SetGraphicsRootDescriptorTable(paramIndex, baseDescriptor.GPU());
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetRootDescriptorTableCompute(u32 paramIndex,
+                                           Descriptor baseDescriptor)
+{
+  mHandle->SetComputeRootDescriptorTable(paramIndex, baseDescriptor.GPU());
+}
+
+// -------------------------------------------------------------------------- //
+
+void
 CommandList::SetName(const String& name)
 {
   D3D12Util::SetName(mHandle, name);
   D3D12Util::SetName(mAllocator, name + "Allocator");
 }
+
 }

@@ -47,7 +47,13 @@ Buffer::Buffer(const CreateInfo& createInfo)
 
 Buffer::Buffer(u64 size, Usage usages, HeapKind heapKind, u32 alignment)
   : mSize(size)
+  , mAlignment(alignment)
 {
+  // Assert preconditions
+  Assert(IsPowerOfTwo(mAlignment),
+         "Buffer alignment must be a power of two ({} != 2^X)",
+         mAlignment);
+
   Device* device = App::Instance()->GetDevice();
 
   // Setup resource descriptor
@@ -109,13 +115,13 @@ Buffer::~Buffer()
 
 // -------------------------------------------------------------------------- //
 
-void*
+u8*
 Buffer::Map()
 {
   void* pointer;
   HRESULT hresult = mResource->Map(0, nullptr, &pointer);
   Assert(SUCCEEDED(hresult), "Failed to map buffer");
-  return pointer;
+  return static_cast<u8*>(pointer);
 }
 
 // -------------------------------------------------------------------------- //

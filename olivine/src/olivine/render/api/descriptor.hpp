@@ -138,6 +138,9 @@ private:
   /* Capacity of heap */
   u32 mCount;
 
+  /* Whether heap is shader visible */
+  bool mIsShaderVisible;
+
 public:
   /** Create a descriptor heap for 'count' number of descriptors of the
    * specified descriptor type.
@@ -145,8 +148,9 @@ public:
    * \param kind Kind of descriptors that heap store.
    * \param count Number of descriptors of the kind that can be stored in the
    * descriptor heap.
+   * \param shaderVisible Whether descriptor heap should be shader visible
    */
-  DescriptorHeap(Descriptor::Kind kind, u32 count);
+  DescriptorHeap(Descriptor::Kind kind, u32 count, bool shaderVisible = false);
 
   /** Destroy the descriptor heap.
    * \brief Destroy descriptor heap.
@@ -164,6 +168,13 @@ public:
                                 Texture* texture,
                                 Format format = Format::kInvalid);
 
+  /**
+   *
+   */
+  Descriptor WriteDescriptorSRV(u32 index,
+                                Texture* texture,
+                                Format format = Format::kInvalid);
+
   /** Returns the descriptor in the heap at the specified index.
    * \brief Returns descriptor at index.
    * \param index Index to get descriptor at.
@@ -178,11 +189,23 @@ public:
    */
   Descriptor operator[](u32 index);
 
+  /** Returns whether or not the descriptor heap is shader visible.
+   * \brief Returns whether heap is shader visible.
+   * \return True if the descriptor heap is shader visible.
+   */
+  bool IsShaderVisible() const { return mIsShaderVisible; }
+
   /** Set the name of the descriptor heap.
    * \brief Set name.
    * \param name Name to set.
    */
   void SetName(const String& name);
+
+  /** Returns the handle of the descriptor heap.
+   * \brief Returns handle.
+   * \return Handle.
+   */
+  ID3D12DescriptorHeap* GetHandle() const { return mHandle; }
 };
 
 }

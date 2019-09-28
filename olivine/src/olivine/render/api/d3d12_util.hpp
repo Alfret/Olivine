@@ -28,6 +28,7 @@
 
 // Project headers
 #include "olivine/core/macros.hpp"
+#include "olivine/core/string.hpp"
 #include "olivine/render/format.hpp"
 
 // Platform headers
@@ -51,6 +52,7 @@ OL_FORWARD_DECLARE(String);
 OL_FORWARD_DECLARE_ENUM(HeapKind : u32);
 OL_FORWARD_DECLARE_ENUM(ResourceState : u32);
 OL_FORWARD_DECLARE_ENUM(PrimitiveTopology : u32);
+OL_FORWARD_DECLARE_ENUM(ComparisonFunction : u32);
 
 /** \class D3D12Util
  * \author Filip Björklund
@@ -64,6 +66,24 @@ class D3D12Util
   OL_NAMESPACE_CLASS(D3D12Util);
 
 public:
+  /** Assert that an HRESULT represents success.
+   * \brief Assert HRESULT.
+   * \param hresult Result to check.
+   * \param format Format for the message string.
+   * \param arguments Arguments to format string.
+   */
+  template<typename... ARGS>
+  static void Assert(HRESULT hresult,
+                     const String& format,
+                     ARGS&&... arguments);
+
+  /** Assert that an HRESULT represents success.
+   * \brief Assert HRESULT.
+   * \param hresult Result to check.
+   * \param message Message.
+   */
+  static void Assert(HRESULT hresult, const String& message);
+
   /** Convert from 'Format' to 'DXGI_FORMAT'
    * \brief Convert to DXGI format.
    * \param format Format to convert.
@@ -93,6 +113,13 @@ public:
   static D3D12_PRIMITIVE_TOPOLOGY ToPrimitiveTopology(
     PrimitiveTopology topology);
 
+  /** Convert from 'ComparisonFunction' to 'D3D12_COMPARISON_FUNC'.
+   * \brief Convert to comparison function.
+   * \param func Comparison function to convert.
+   * \return Converted comparison function.
+   */
+  static D3D12_COMPARISON_FUNC ToComparisonFunc(ComparisonFunction func);
+
   /** Set the name of a IDXGIObject.
    * \brief Set IDXGIObject name.
    */
@@ -103,5 +130,14 @@ public:
    */
   static void SetName(ID3D12Object* object, const String& name);
 };
+
+// -------------------------------------------------------------------------- //
+
+template<typename... ARGS>
+void
+D3D12Util::Assert(HRESULT hresult, const String& format, ARGS&&... arguments)
+{
+  Assert(hresult, String::Format(format, std::forward<ARGS>(arguments)...));
+}
 
 }

@@ -23,6 +23,13 @@
 #pragma once
 
 // ========================================================================== //
+// Headers
+// ========================================================================== //
+
+// Project headers
+#include "olivine/core/assert.hpp"
+
+// ========================================================================== //
 // Functions
 // ========================================================================== //
 
@@ -72,6 +79,39 @@ constexpr T
 Clamp(T value, T lower, T upper)
 {
   return value < lower ? lower : value > upper ? upper : value;
+}
+
+// -------------------------------------------------------------------------- //
+
+/** Returns whether or not a given value is a power of two.
+ * \brief Returns whether value is power of two.
+ * \return True if the value is a power of two otherwise false.
+ */
+template<typename T>
+constexpr bool
+IsPowerOfTwo(T value)
+{
+  return value && !(value & (value - 1));
+}
+
+// -------------------------------------------------------------------------- //
+
+/** Align a value to the specified alignment.
+ * \brief Align value.
+ * \param value Value to align.
+ * \param alignment Alignment. Required to be a power of two.
+ * \return Aligned value.
+ */
+inline u64
+AlignUp(u64 value, u64 alignment)
+{
+  Assert(IsPowerOfTwo(alignment),
+         "Can only align with an alignment that is a power of two");
+
+#pragma warning(push)
+#pragma warning(disable : 4146)
+  return (value + (alignment - 1)) & -alignment;
+#pragma warning(pop)
 }
 
 }

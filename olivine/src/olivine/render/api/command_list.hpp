@@ -37,6 +37,7 @@
 namespace olivine {
 
 OL_FORWARD_DECLARE(Texture);
+OL_FORWARD_DECLARE(Buffer);
 OL_FORWARD_DECLARE(Descriptor);
 OL_FORWARD_DECLARE(Color);
 OL_FORWARD_DECLARE(Viewport);
@@ -45,6 +46,7 @@ OL_FORWARD_DECLARE(RootSignature);
 OL_FORWARD_DECLARE(PipelineState);
 OL_FORWARD_DECLARE(VertexBuffer);
 OL_FORWARD_DECLARE(IndexBuffer);
+OL_FORWARD_DECLARE(DescriptorHeap);
 OL_FORWARD_DECLARE_ENUM(PrimitiveTopology : u32);
 
 /** \class CommandList
@@ -59,7 +61,9 @@ class CommandList
 {
 public:
   /* Maximum number of vertex buffers that can be bound with the same call */
-  static constexpr u32 kMaxBindVertexBuffer = 16;
+  static constexpr u32 kMaxBoundVertexBuffer = 16;
+  /* Maxmimum number of descriptor heaps that can be bounds at one time */
+  static constexpr u32 kMaxBoundDescriptorHeaps = 2;
 
 private:
   /* List handle */
@@ -124,6 +128,32 @@ public:
                           ResourceState from,
                           ResourceState to);
 
+  /** Copy data between the 'src' and 'dst' buffer at the specified offsets. The
+   * number of bytes to copy are specified by 'size'.
+   * \brief Copy between buffers.
+   * \param dst Destination buffer.
+   * \param src Source buffer.
+   * \param size Number of bytes to copy. If size is zero (0) then the smallest
+   * size of that of the two buffers are used.
+   * \param dstOffset Offset in destination buffer to copy to.
+   * \param srcOffset Offset in source buffer to copy from.
+   */
+  void Copy(Buffer* dst,
+            Buffer* src,
+            u64 size,
+            u64 dstOffset = 0,
+            u64 srcOffset = 0);
+
+  /** Copy data from the 'src' buffer into the 'dst' texture. The buffer has
+   * certain requirements for the layout of data that must be respected. These
+   * requirement can be retrieved from the texture.
+   * \brief Copy buffer to texture.
+   * \param dst Destination texture.
+   * \param src Source buffer.
+   * \param srcOffset Offset in source buffer.
+   */
+  void Copy(Texture* dst, Buffer* src, u64 srcOffset = 0);
+
   /** Set the render target.
    * \brief Set render target.
    * \param descriptor Render-target view descriptor.
@@ -181,12 +211,12 @@ public:
   void SetVertexBuffer(const VertexBuffer* vertexBuffer, u32 slot = 0);
 
   /** Set multiple vertex buffers.
-   * \brief If more than 'kMaxBindVertexBuffer' vertex buffers must be set, then
-   * multiple calls can be made with different starting slots.
+   * \brief If more than 'kMaxBoundVertexBuffer' vertex buffers must be set,
+   * then multiple calls can be made with different starting slots.
    * \brief Set vertex buffers.
    * \param vertexBuffers Vertex buffers to set.
    * \param count Number of vertex buffer to set. Maximum value is
-   * kMaxBindVertexBuffer.
+   * kMaxBoundVertexBuffer.
    * \param startSlot Starting slot to bind vertex buffers from.
    */
   void SetVertexBuffers(const VertexBuffer* const* vertexBuffers,
@@ -198,6 +228,40 @@ public:
    * \param indexBuffer Index buffer to set.
    */
   void SetIndexBuffer(const IndexBuffer* indexBuffer);
+
+  /** Set the current descriptor heap. Only one sampler heap and non-sampler
+   * heap can be bound at one time. This means that the function
+   * 'SetDescriptorHeaps' must be used instead if the user must bind a sampler
+   * aswell as a non-sampler heap at the same time.
+   * \brief Set descriptor heap.
+   */
+  void SetDescriptorHeap(const DescriptorHeap* heap);
+
+  /** Set multiple descriptor heaps. The maximum count is only two (2) as there
+   * is only support for a single sampler heap and non-sampler heap bound at one
+   * time.
+   * \brief Set descriptor heaps.
+   * \param heaps Heaps to set.
+   * \param count Number of heaps to set. Maximum value is two (2).
+   */
+  void SetDescriptorHeaps(const DescriptorHeap* const* heaps, u32 count);
+
+  /** Set a root descriptor table at the specified parmeter index for the
+   * graphics pipeline.
+   * \brief Set graphics root descriptor table.
+   * \param paramIndex Parameter index.
+   * \param baseDescriptor Base descriptor in the table (Handle to table start).
+   */
+  void SetRootDescriptorTableGraphics(u32 paramIndex,
+                                      Descriptor baseDescriptor);
+
+  /** Set a root descriptor table at the specified parmeter index for the
+   * compute pipeline.
+   * \brief Set compute root descriptor table.
+   * \param paramIndex Parameter index.
+   * \param baseDescriptor Base descriptor in the table (Handle to table start).
+   */
+  void SetRootDescriptorTableCompute(u32 paramIndex, Descriptor baseDescriptor);
 
   /** Returns the kind of the command list.
    * \brief Returns the kind.

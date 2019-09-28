@@ -37,6 +37,8 @@
 namespace olivine {
 
 OL_FORWARD_DECLARE(CommandList);
+OL_FORWARD_DECLARE(Buffer);
+OL_FORWARD_DECLARE(Texture);
 
 /** \class CommandQueue
  * \author Filip Björklund
@@ -96,6 +98,31 @@ public:
    * \param value Value to signal semaphore with.
    */
   void SignalSemaphore(Semaphore* semaphore, u64 value) const;
+
+  /** Wait for a semaphore to be signalled with the specified value.
+   * \note This will not immediately wait for the semaphore but rather insert a
+   * command into the queue that will be executed on the device to wait on the
+   * semaphore on the GPU timeline.
+   * \brief Wait for semaphore.
+   * \param semaphore Semaphore to wait on.
+   * \param value Value to wait for.
+   */
+  void WaitSemaphore(Semaphore* semaphore, u64 value) const;
+
+  /** Upload data from a buffer 'src' to a texture 'dst' using the specified
+   * command list. The list is expected to not be in a recording state when
+   * calling this function.
+   * \note This function blocks until the upload is finished and cannot work
+   * with a list that has other commands recorded. It's main purpose is to
+   * support quick uploading of data for trying things out.
+   * \brief Upload buffer to texture.
+   * \param list Command list to perform upload with. Must be closed when
+   * calling the function.
+   * \param dst Destination texture.
+   * \param src Source buffer.
+   * \param srcOffset Offset in the source buffer to copy from.
+   */
+  void Upload(CommandList* list, Texture* dst, Buffer* src, u64 srcOffset = 0);
 
   /** Flush the command queue by waiting for all the pending and executing
    * commands to finish running.

@@ -49,7 +49,7 @@ Texture::Texture(const CreateInfo& createInfo)
   // Setup resource descriptor
   D3D12_RESOURCE_DESC desc;
   desc.Dimension = ToResourceDim(createInfo.dimension);
-  desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+  desc.Alignment = 0;
   desc.Width = createInfo.width;
   desc.Height = createInfo.height;
   desc.DepthOrArraySize =
@@ -119,6 +119,26 @@ Texture::~Texture()
   // Release resource
   mResource->Release();
   mResource = nullptr;
+}
+
+// -------------------------------------------------------------------------- //
+
+Texture::BufferRequirements
+Texture::GetBufferRequirements() const
+{
+  Device* device = App::Instance()->GetDevice();
+
+  D3D12_RESOURCE_DESC desc = mResource->GetDesc();
+  UINT64 size, rowsize;
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
+  device->GetHandle()->GetCopyableFootprints(
+    &desc, 0, 1, 0, &footprint, nullptr, &rowsize, &size);
+
+  BufferRequirements reqs;
+  reqs.size = u64(size);
+  reqs.alignment = desc.Alignment;
+  reqs.rowStride = footprint.Footprint.RowPitch;
+  return reqs;
 }
 
 // -------------------------------------------------------------------------- //

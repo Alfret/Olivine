@@ -72,6 +72,17 @@ public:
   };
   OL_ENUM_CLASS_OPERATORS(friend, Usage, u32);
 
+  /* Requirements for storing texture data in a buffer */
+  struct BufferRequirements
+  {
+    /* Minimum size of the buffer */
+    u64 size;
+    /* Minimum alignment of the buffer */
+    u64 alignment;
+    /* Stride for data of each row */
+    u64 rowStride;
+  };
+
   /* Creation information */
   struct CreateInfo
   {
@@ -162,6 +173,13 @@ public:
    * \return Format.
    */
   Format GetFormat() const { return mFormat; }
+
+  /** Returns the requirements for a buffer that can hold data that can be used
+   * by this texture.
+   * \brief Returns buffer requirements.
+   * \return Buffer requirements.
+   */
+  BufferRequirements GetBufferRequirements() const;
 
   /** Returns the resource for the texture.
    * \brief Returns resource.

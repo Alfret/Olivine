@@ -121,9 +121,11 @@
     <ClCompile Include="src\olivine\render\api\pipeline_state.cpp" />
     <ClCompile Include="src\olivine\render\api\queue.cpp" />
     <ClCompile Include="src\olivine\render\api\root_signature.cpp" />
+    <ClCompile Include="src\olivine\render\api\sampler.cpp" />
     <ClCompile Include="src\olivine\render\api\semaphore.cpp" />
     <ClCompile Include="src\olivine\render\api\swap_chain.cpp" />
     <ClCompile Include="src\olivine\render\api\texture.cpp" />
+    <ClCompile Include="src\olivine\render\api\upload.cpp" />
     <ClCompile Include="src\olivine\render\api\vertex_buffer.cpp" />
     <ClCompile Include="src\olivine\render\color.cpp" />
     <ClCompile Include="src\thirdparty\alflib\alf_unicode.c" />
@@ -182,6 +184,7 @@
     <ClInclude Include="src\olivine\core\types.hpp" />
     <ClInclude Include="src\olivine\core\version.hpp" />
     <ClInclude Include="src\olivine\math\limits.hpp" />
+    <ClInclude Include="src\olivine\math\literals.hpp" />
     <ClInclude Include="src\olivine\math\math.hpp" />
     <ClInclude Include="src\olivine\math\matrix4f.hpp" />
     <ClInclude Include="src\olivine\math\simd.hpp" />
@@ -199,9 +202,11 @@
     <ClInclude Include="src\olivine\render\api\pipeline_state.hpp" />
     <ClInclude Include="src\olivine\render\api\queue.hpp" />
     <ClInclude Include="src\olivine\render\api\root_signature.hpp" />
+    <ClInclude Include="src\olivine\render\api\sampler.hpp" />
     <ClInclude Include="src\olivine\render\api\semaphore.hpp" />
     <ClInclude Include="src\olivine\render\api\swap_chain.hpp" />
     <ClInclude Include="src\olivine\render\api\texture.hpp" />
+    <ClInclude Include="src\olivine\render\api\upload.hpp" />
     <ClInclude Include="src\olivine\render\api\vertex_buffer.hpp" />
     <ClInclude Include="src\olivine\render\color.hpp" />
     <ClInclude Include="src\olivine\render\format.hpp" />

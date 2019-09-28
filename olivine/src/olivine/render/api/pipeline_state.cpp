@@ -68,6 +68,14 @@ PipelineState::~PipelineState()
 // -------------------------------------------------------------------------- //
 
 void
+PipelineState::SetName(const String& name)
+{
+  D3D12Util::SetName(mHandle, name);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
 PipelineState::SetupForGraphics(const CreateInfo& createInfo)
 {
   Device* device = App::Instance()->GetDevice();
