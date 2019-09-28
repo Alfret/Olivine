@@ -170,6 +170,15 @@ FileIO::Read(u8* buffer, u64 toRead, u64& read)
 // -------------------------------------------------------------------------- //
 
 FileResult
+FileIO::Read(u8* buffer, u64 toRead)
+{
+  u64 read;
+  return Read(buffer, toRead, read);
+}
+
+// -------------------------------------------------------------------------- //
+
+FileResult
 FileIO::Read(String& string)
 {
   // Allocate buffer
@@ -208,6 +217,15 @@ FileIO::Write(const u8* buffer, u64 toWrite, u64& written) const
   }
   written = _written;
   return FileResult::kSuccess;
+}
+
+// -------------------------------------------------------------------------- //
+
+FileResult
+FileIO::Write(const u8* buffer, u64 toWrite) const
+{
+  u64 written;
+  return Write(buffer, toWrite, written);
 }
 
 // -------------------------------------------------------------------------- //

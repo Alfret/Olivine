@@ -127,6 +127,15 @@ public:
    */
   FileResult Read(u8* buffer, u64 toRead, u64& read);
 
+  /** Read data from the file into a buffer. The buffer and number of bytes must
+   * be specified by the user.
+   * \brief Read from file.
+   * \param[in] buffer Buffer to read into.
+   * \param[in] toRead Number of bytes to read.
+   * \return Result.
+   */
+  FileResult Read(u8* buffer, u64 toRead);
+
   /** Read the entire contents of the file into a string.
    * \brief Read file into string.
    * \param string String to read file into.
@@ -144,6 +153,15 @@ public:
    * \return Result.
    */
   FileResult Write(const u8* buffer, u64 toWrite, u64& written) const;
+
+  /** Write data from a buffer into the file. The buffer and number of bytes to
+   * write must be specified by the user.
+   * \brief Write to file.
+   * \param[in] buffer Buffer to write data from.
+   * \param[in] toWrite Number of bytes to write.
+   * \return Result.
+   */
+  FileResult Write(const u8* buffer, u64 toWrite) const;
 
   /** Write the contents of a string to the file.
    * \brief Write string.
