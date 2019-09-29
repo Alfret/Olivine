@@ -27,38 +27,31 @@
 // ========================================================================== //
 
 // Project headers
+#include "olivine/render/api/d3d12_util.hpp"
 #include "olivine/render/api/buffer.hpp"
 
 // ========================================================================== //
-// VertexBuffer Declaration
+// ConstantBuffer Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-/** \class VertexBuffer
+/** \class ConstantBuffer
  * \author Filip Björklund
- * \date 27 september 2019 - 16:25
- * \brief Vertex buffer.
+ * \date 29 september 2019 - 14:30
+ * \brief Constant buffer.
  * \details
- * Represents a vertex buffer.
+ * Represents a constant buffer.
  */
-class VertexBuffer
+class ConstantBuffer
 {
-public:
-  /* Vertex buffer view  */
-  struct View
-  {
-    /* View handle */
-    D3D12_VERTEX_BUFFER_VIEW handle;
-  };
 
+public:
   /* Creation information */
   struct CreateInfo
   {
     /* Size of the vertex buffer */
     u64 size;
-    /** Stride **/
-    u32 stride = 0;
     /** Buffer alignment **/
     u64 alignment = Buffer::kDefaultAlign;
     /** Kind of memory heap to place buffer in **/
@@ -69,39 +62,30 @@ private:
   /* Buffer */
   Buffer mBuffer;
 
-  /* View of the buffer */
-  View mView;
-
 public:
-  /** Construct a vertex buffer from a creation information structure.
-   * \brief Construct vertex buffer.
+  /** Construct a constant buffer from a creation information structure.
+   * \brief Construct constant buffer.
    * \param createInfo Creation information.
    */
-  explicit VertexBuffer(const CreateInfo& createInfo);
+  explicit ConstantBuffer(const CreateInfo& createInfo);
 
-  /** Destruct the vertex buffer.
-   * \brief Destruct vertex buffer.
+  /** Destruct the constant buffer.
+   * \brief Destruct constant buffer.
    */
-  ~VertexBuffer() = default;
+  ~ConstantBuffer() = default;
 
   /** Write data to the buffer.
    * \brief Write data.
    * \param data Data to write.
    * \param size Size of data to write in bytes.
    */
-  void Write(u8* data, u64 size);
+  void Write(u8* data, u64 size) { mBuffer.Write(data, size); }
 
-  /** Returns the generic buffer that represents the vertex buffer.
+  /** Returns the generic buffer that represents the constant buffer.
    * \brief Returns buffer.
    * \return Buffer.
    */
   const Buffer& GetBuffer() const { return mBuffer; }
-
-  /** Returns the view of the vertex buffer.
-   * \brief Returns the view.
-   * \return Vertex buffer view.
-   */
-  const View& GetView() const { return mView; }
 
   /** Set the name of the vertex buffer.
    * \brief Set name.

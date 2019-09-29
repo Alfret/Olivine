@@ -72,10 +72,7 @@ Sampler::ToFilter(Filter min,
 
   // Create filter
   if (anisotropic) {
-    return D3D12_ENCODE_ANISOTROPIC_FILTER(ToFilterType(min),
-                                           ToFilterType(mag),
-                                           ToFilterType(mip),
-                                           ToReductionType(reductionKind));
+    return D3D12_ENCODE_ANISOTROPIC_FILTER(ToReductionType(reductionKind));
   }
   return D3D12_ENCODE_BASIC_FILTER(ToFilterType(min),
                                    ToFilterType(mag),

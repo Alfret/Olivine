@@ -118,8 +118,9 @@ PipelineState::SetupForGraphics(const CreateInfo& createInfo)
 
   // Setup rasterizer state
   desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-  desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-  desc.RasterizerState.FrontCounterClockwise = false;
+  desc.RasterizerState.CullMode = D3D12Util::ToCullMode(createInfo.cullMode);
+  desc.RasterizerState.FrontCounterClockwise =
+    createInfo.windingOrder == WindingOrder::kCounterClockwise;
   desc.RasterizerState.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
   desc.RasterizerState.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
   desc.RasterizerState.SlopeScaledDepthBias =

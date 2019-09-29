@@ -45,7 +45,7 @@ Buffer::Buffer(const CreateInfo& createInfo)
 
 // -------------------------------------------------------------------------- //
 
-Buffer::Buffer(u64 size, Usage usages, HeapKind heapKind, u32 alignment)
+Buffer::Buffer(u64 size, Usage usages, HeapKind heapKind, u64 alignment)
   : mSize(size)
   , mAlignment(alignment)
 {

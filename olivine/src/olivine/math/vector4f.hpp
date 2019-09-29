@@ -91,6 +91,54 @@ public:
   /** Returns the simd data **/
   Float4x32 GetData() const { return mData; };
 
+  /** Returns the X value of the vector.
+   * \brief Returns X value.
+   * \return X value.
+   */
+  f32& X() { return mData.GetX(); }
+
+  /** Returns the X value of the vector.
+   * \brief Returns X value.
+   * \return X value.
+   */
+  const f32& X() const { return mData.GetX(); }
+
+  /** Returns the Y value of the vector.
+   * \brief Returns Y value.
+   * \return Y value.
+   */
+  f32& Y() { return mData.GetY(); }
+
+  /** Returns the Y value of the vector.
+   * \brief Returns Y value.
+   * \return Y value.
+   */
+  const f32& Y() const { return mData.GetY(); }
+
+  /** Returns the Z value of the vector.
+   * \brief Returns Z value.
+   * \return Z value.
+   */
+  f32& Z() { return mData.GetZ(); }
+
+  /** Returns the Z value of the vector.
+   * \brief Returns Z value.
+   * \return Z value.
+   */
+  const f32& Z() const { return mData.GetZ(); }
+
+  /** Returns the W value of the vector.
+   * \brief Returns W value.
+   * \return W value.
+   */
+  f32& W() { return mData.GetW(); }
+
+  /** Returns the W value of the vector.
+   * \brief Returns W value.
+   * \return W value.
+   */
+  const f32& W() const { return mData.GetW(); }
+
 private:
   /** Construct from data **/
   Vector4F(const Float4x32& data);

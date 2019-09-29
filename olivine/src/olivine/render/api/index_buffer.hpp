@@ -69,7 +69,7 @@ public:
     /* Index formt */
     Format format;
     /* Buffer alignment */
-    u32 alignment = Buffer::kDefaultAlign;
+    u64 alignment = Buffer::kDefaultAlign;
     /* Kind of memory heap to place buffer in */
     HeapKind heapKind = HeapKind::kDefault;
   };

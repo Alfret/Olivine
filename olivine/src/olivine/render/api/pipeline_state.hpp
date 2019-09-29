@@ -32,6 +32,7 @@
 // Project headers
 #include "olivine/core/string.hpp"
 #include "olivine/render/api/d3d12_util.hpp"
+#include "olivine/render/api/common.hpp"
 
 // ========================================================================== //
 // PipelineState Declaration
@@ -127,6 +128,11 @@ public:
     ShaderBinary ps;
     /* Compute shader */
     ShaderBinary cs;
+
+    /* Winding order */
+    WindingOrder windingOrder = WindingOrder::kClockwise;
+    /* Cull mode */
+    CullMode cullMode = CullMode::kNone;
   };
 
 private:

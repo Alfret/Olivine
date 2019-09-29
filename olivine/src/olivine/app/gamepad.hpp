@@ -26,6 +26,9 @@
 // Headers
 // ========================================================================== //
 
+// Project headers
+#include "olivine/core/platform/headers.hpp"
+
 // Thirdparty headers
 #include "thirdparty/glfw/glfw3.h"
 

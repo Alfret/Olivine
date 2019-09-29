@@ -119,6 +119,7 @@ public:
         PipelineState::VertexAttributeKind::kByte4,
         offsetof(Vertex, color) }
     };
+    pipelineStateInfo.cullMode = CullMode::kBack;
     mPipelineState = new PipelineState(pipelineStateInfo);
     mPipelineState->SetName("MainPipelineState");
 

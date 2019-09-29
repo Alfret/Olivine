@@ -65,7 +65,8 @@ RootSignature::RootSignature(const CreateInfo& createInfo)
                "Maximum number of root table descriptor ranges exceeded");
 
         rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        rootParam.DescriptorTable.NumDescriptorRanges = table.ranges.size();
+        rootParam.DescriptorTable.NumDescriptorRanges =
+          UINT(table.ranges.size());
         rootParam.DescriptorTable.pDescriptorRanges = totalRanges[i];
 
         // Build ranges
@@ -135,9 +136,9 @@ RootSignature::RootSignature(const CreateInfo& createInfo)
 
   // Setup root signature desc
   D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-  rootSignatureDesc.NumParameters = rootParams.size();
+  rootSignatureDesc.NumParameters = UINT(rootParams.size());
   rootSignatureDesc.pParameters = rootParams.data();
-  rootSignatureDesc.NumStaticSamplers = createInfo.staticSamplers.size();
+  rootSignatureDesc.NumStaticSamplers = UINT(createInfo.staticSamplers.size());
   rootSignatureDesc.pStaticSamplers = totalStaticSamplers;
   rootSignatureDesc.Flags =
     D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;

@@ -32,6 +32,7 @@
 #include "olivine/core/types.hpp"
 #include "olivine/core/string.hpp"
 #include "olivine/core/common.hpp"
+#include "olivine/core/platform/headers.hpp"
 
 // Thirdparty headers
 #include "thirdparty/glfw/glfw3.h"

@@ -190,6 +190,27 @@ D3D12Util::ToComparisonFunc(ComparisonFunction func)
 
 // -------------------------------------------------------------------------- //
 
+D3D12_CULL_MODE
+D3D12Util::ToCullMode(CullMode cullMode)
+{
+  switch (cullMode) {
+    case CullMode::kNone: {
+      return D3D12_CULL_MODE_NONE;
+    }
+    case CullMode::kFront: {
+      return D3D12_CULL_MODE_FRONT;
+    }
+    case CullMode::kBack: {
+      return D3D12_CULL_MODE_BACK;
+    }
+    default: {
+      Panic("Invalid cull mode");
+    }
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
 void
 D3D12Util::SetName(IDXGIObject* object, const String& name)
 {

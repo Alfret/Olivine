@@ -26,8 +26,11 @@
 // Headers
 // ========================================================================== //
 
+// Project headers
+#include "olivine/core/platform/headers.hpp"
+
 // Library headers
-#include <GLFW/glfw3.h>
+#include <thirdparty/glfw/glfw3.h>
 
 // ========================================================================== //
 // Key Enumeration

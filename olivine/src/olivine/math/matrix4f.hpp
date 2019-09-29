@@ -29,7 +29,6 @@
 // Project headers
 #include "olivine/core/macros.hpp"
 #include "olivine/math/simd.hpp"
-#include "olivine/math/vector4f.hpp"
 
 // ========================================================================== //
 // Matrix4F Declaration
@@ -37,24 +36,38 @@
 
 namespace olivine {
 
-/** 4x4 matrix */
+OL_FORWARD_DECLARE(Vector3F);
+OL_FORWARD_DECLARE(Vector4F);
+
+/** \class Matrix4F
+ * \author Filip Björklund
+ * \date 29 september 2019 - 14:39
+ * \brief 4-by-4, f32 valued matrix.
+ * \details
+ * Represents a 4-by-4 matrix of f32 values.
+ */
 class Matrix4F
 {
 public:
-  /** Number of elements in matrix **/
-  static constexpr u32 ELEMENT_COUNT = 16;
+  /* Number of elements in matrix */
+  static constexpr u32 kElementCount = 16;
 
 private:
+  /* Data union for 'simd' and 'array' */
   union Data
   {
-    /** Simd data **/
+    /* Simd */
     Float4x32 simd[4]{};
-    /** Array data **/
+    /* Array */
     f32 elements[16];
   } mData{};
 
 public:
-  /** Construct matrix with specified value in diagonal cells **/
+  /** Construct a 4-by-4 matrix with the specified value set for the diagonal
+   * elements.
+   * \brief Construct matrix with diagonal value.
+   * \param diagonal Value to set for diagonal elements.
+   */
   explicit Matrix4F(f32 diagonal = 0.0f);
 
   /** Construct matrix from list of values. Pointer is expected to point to an
@@ -106,19 +119,130 @@ private:
   Matrix4F(Float4x32 r0, Float4x32 r1, Float4x32 r2, Float4x32 r3);
 
 public:
-  /** Returns an identity matrix **/
+  /** Returns a matrix representing the identity matrix. All the values on the
+   * diagonal are set to 1.0.
+   * \brief Returns identity matrix.
+   * \return Identity matrix.
+   */
   static Matrix4F Identity();
 
-  /** Returns an orthographic project matrix **/
+  /** Returns a matrix that represents a translation.
+   * \brief Returns translation matrix.
+   * \param x Translation in X axis.
+   * \param y Translation in Y axis.
+   * \param z Translation in Z axis.
+   * \return Translation matrix
+   */
+  static Matrix4F Translation(f32 x, f32 y, f32 z);
+
+  /** Returns a matrix that represents a translation.
+   * \brief Returns translation matrix.
+   * \param vector Vector to create translation for. First element corresponds
+   * to X, second to Y and third to Z.
+   * \return Translation matrix
+   */
+  static Matrix4F Translation(const Vector3F& vector);
+
+  /** Returns a matrix that represents a translation.
+   * \brief Returns translation matrix.
+   * \param vector Vector to create translation for. First element corresponds
+   * to X, second to Y and third to Z. Forth value is ignored.
+   * \return Translation matrix
+   */
+  static Matrix4F Translation(const Vector4F& vector);
+
+  /** Returns a matrix that represents a rotation around the X axis by the
+   * specified number of radians.
+   * \brief Returns rotation around X axis.
+   * \param radians Number of radians to rotate with.
+   * \return Rotation matrix.
+   */
+  static Matrix4F RotationX(f32 radians);
+
+  /** Returns a matrix that represents a rotation around the Y axis by the
+   * specified number of radians.
+   * \brief Returns rotation around Y axis.
+   * \param radians Number of radians to rotate with.
+   * \return Rotation matrix.
+   */
+  static Matrix4F RotationY(f32 radians);
+
+  /** Returns a matrix that represents a rotation around the Z axis by the
+   * specified number of radians.
+   * \brief Returns rotation around Z axis.
+   * \param radians Number of radians to rotate with.
+   * \return Rotation matrix.
+   */
+  static Matrix4F RotationZ(f32 radians);
+
+  /** Returns a matrix that represents a rotation about all axis at the same
+   * time. The rotation for each axis are specified by the respective element in
+   * the vector.
+   * \brief Returns rotation matrix.
+   * \param vector Vector with radians angles for each axis.
+   * \return Rotation matrix.
+   */
+  static Matrix4F Rotation(const Vector3F& vector);
+
+  /** Returns a matrix that represents a uniform scaling on all three axis.
+   * \brief Returns uniform scaling matrix.
+   * \param scale Scaling factor.
+   * \return Uniform scaling matrix.
+   */
+  static Matrix4F Scale(f32 scale);
+
+  /** Returns a matrix that represents a non-uniform scaling. Meaning each axis
+   * can be scaled by a different amount.
+   * \brief Returns scaling matrix.
+   * \param x Scaling factor for X axis.
+   * \param y Scaling factor for Y axis.
+   * \param z Scaling factor for Z axis.
+   * \return Non-uniform scaling matrix.
+   */
+  static Matrix4F Scale(f32 x, f32 y, f32 z);
+
+  /** Returns a matrix that represents an orthographic projection. The
+   * projection is created from the specifed viewport width and height, aswell
+   * as the distances for the near and far planes.
+   * \brief Returns orthographic projection.
+   * \param width Width of the viewport.
+   * \param height Height of the viewport.
+   * \param zNear Near plane.
+   * \param zFar Far plane.
+   * \return Orthographic projection matrix.
+   */
   static Matrix4F Orthographic(f32 width, f32 height, f32 zNear, f32 zFar);
 
-  /** Returns an orthographic project matrix **/
+  /** Returns a matrix that represents an orthographic projection. The
+   * projection is created from the specifed viewport edge values, aswell
+   * as the distances for the near and far planes.
+   * \brief Returns orthographic projection.
+   * \param top Top edge of the viewport.
+   * \param bottom Bottom edge of the viewport.
+   * \param left Left edge of the viewport.
+   * \param right Right edge of the viewport.
+   * \param zNear Near plane.
+   * \param zFar Far plane.
+   * \return Orthographic projection matrix.
+   */
   static Matrix4F Orthographic(f32 top,
                                f32 bottom,
                                f32 left,
                                f32 right,
                                f32 zNear,
                                f32 zFar);
+
+  static Matrix4F Perspective(f32 top,
+                              f32 bottom,
+                              f32 left,
+                              f32 right,
+                              f32 zNear,
+                              f32 zFar);
+
+  static Matrix4F Perspective(f32 verticalFov,
+                              f32 aspectRatio,
+                              f32 zNear,
+                              f32 zFar);
 };
 
 }

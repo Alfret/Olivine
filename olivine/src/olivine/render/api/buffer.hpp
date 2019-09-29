@@ -74,7 +74,7 @@ public:
     /** Size in bytes**/
     u64 size = 0;
     /** Alignment in bytes. Must be a power of two **/
-    u32 alignment = kDefaultAlign;
+    u64 alignment = kDefaultAlign;
     /** Usages for buffer **/
     Usage usages = Usage::kNone;
     /** Kind of memory to place buffer in **/
@@ -110,7 +110,7 @@ public:
   Buffer(u64 size,
          Usage usages,
          HeapKind heapKind = HeapKind::kDefault,
-         u32 alignment = kDefaultAlign);
+         u64 alignment = kDefaultAlign);
 
   /** Destruct the buffer.
    * \brief Destruct buffer.

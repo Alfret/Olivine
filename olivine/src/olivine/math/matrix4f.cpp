@@ -31,6 +31,8 @@
 
 // Project headers
 #include "olivine/core/memory.hpp"
+#include "olivine/math/vector3f.hpp"
+#include "olivine/math/vector4f.hpp"
 
 // ========================================================================== //
 // Matrix4F Implementation
@@ -50,7 +52,7 @@ Matrix4F::Matrix4F(f32 diagonal)
 
 Matrix4F::Matrix4F(f32* values)
 {
-  memcpy(mData.elements, values, sizeof(f32) * ELEMENT_COUNT);
+  memcpy(mData.elements, values, sizeof(f32) * kElementCount);
 }
 
 // -------------------------------------------------------------------------- //
@@ -60,7 +62,7 @@ Matrix4F::Matrix4F(const std::initializer_list<f32>& list)
   u32 index = 0;
   for (const f32& element : list) {
     mData.elements[index] = element;
-    if (++index >= ELEMENT_COUNT) {
+    if (++index >= kElementCount) {
       break;
     }
   }
@@ -71,7 +73,7 @@ Matrix4F::Matrix4F(const std::initializer_list<f32>& list)
 Matrix4F::Matrix4F(const Matrix4F& other)
 {
   Memory::Copy(
-    mData.elements, other.mData.elements, sizeof(f32) * ELEMENT_COUNT);
+    mData.elements, other.mData.elements, sizeof(f32) * kElementCount);
 }
 
 // -------------------------------------------------------------------------- //
@@ -81,7 +83,7 @@ Matrix4F::operator=(const Matrix4F& other)
 {
   if (this != &other) {
     Memory::Copy(
-      mData.elements, other.mData.elements, sizeof(f32) * ELEMENT_COUNT);
+      mData.elements, other.mData.elements, sizeof(f32) * kElementCount);
   }
   return *this;
 }
@@ -178,7 +180,7 @@ void
 Matrix4F::operator*=(const Matrix4F& other)
 {
   const Matrix4F result = operator*(other);
-  memcpy(mData.elements, result.mData.elements, sizeof(f32) * ELEMENT_COUNT);
+  memcpy(mData.elements, result.mData.elements, sizeof(f32) * kElementCount);
 }
 
 // -------------------------------------------------------------------------- //
@@ -233,6 +235,111 @@ Matrix4F::Identity()
 // -------------------------------------------------------------------------- //
 
 Matrix4F
+Matrix4F::Translation(f32 x, f32 y, f32 z)
+{
+  Matrix4F matrix(1.0f);
+  matrix.mData.elements[3] = x;
+  matrix.mData.elements[7] = y;
+  matrix.mData.elements[11] = z;
+  return matrix;
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::Translation(const Vector3F& vector)
+{
+  return Translation(vector.X(), vector.Y(), vector.Z());
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::Translation(const Vector4F& vector)
+{
+  return Translation(vector.X(), vector.Y(), vector.Z());
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::RotationX(f32 radians)
+{
+  const f32 cosTheta = cos(radians);
+  const f32 sinTheta = sin(radians);
+
+  Matrix4F matrix(1.0f);
+  matrix.mData.elements[5] = cosTheta;
+  matrix.mData.elements[6] = -sinTheta;
+  matrix.mData.elements[9] = sinTheta;
+  matrix.mData.elements[10] = cosTheta;
+  return matrix;
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::RotationY(f32 radians)
+{
+  const f32 cosTheta = cos(radians);
+  const f32 sinTheta = sin(radians);
+
+  Matrix4F matrix(1.0f);
+  matrix.mData.elements[0] = cosTheta;
+  matrix.mData.elements[2] = sinTheta;
+  matrix.mData.elements[8] = -sinTheta;
+  matrix.mData.elements[10] = cosTheta;
+  return matrix;
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::RotationZ(f32 radians)
+{
+  const f32 cosTheta = cos(radians);
+  const f32 sinTheta = sin(radians);
+
+  Matrix4F matrix(1.0f);
+  matrix.mData.elements[0] = cosTheta;
+  matrix.mData.elements[1] = -sinTheta;
+  matrix.mData.elements[4] = sinTheta;
+  matrix.mData.elements[5] = cosTheta;
+  return matrix;
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::Rotation(const Vector3F& vector)
+{
+  return RotationX(vector.X()) * RotationY(vector.Y()) * RotationZ(vector.Z());
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::Scale(f32 scale)
+{
+  return Scale(scale, scale, scale);
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::Scale(f32 x, f32 y, f32 z)
+{
+  Matrix4F matrix;
+  matrix.mData.elements[0] = x;
+  matrix.mData.elements[5] = y;
+  matrix.mData.elements[10] = z;
+  matrix.mData.elements[15] = 1.0f;
+  return matrix;
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
 Matrix4F::Orthographic(f32 width, f32 height, f32 zNear, f32 zFar)
 {
   return Orthographic(
@@ -258,6 +365,47 @@ Matrix4F::Orthographic(f32 top,
   matrix.mData.elements[12] = -((right + left) / (right - left));
   matrix.mData.elements[13] = -((top + bottom) / (top - bottom));
   matrix.mData.elements[14] = -(zNear / (zFar - zNear));
+  return matrix;
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::Perspective(f32 top,
+                      f32 bottom,
+                      f32 left,
+                      f32 right,
+                      f32 zNear,
+                      f32 zFar)
+{
+  Matrix4F matrix;
+  matrix.mData.elements[0] = (2.0f * zNear) / (right - left);
+  matrix.mData.elements[5] = (2.0f * zNear) / (top - bottom);
+  matrix.mData.elements[10] = zFar / (zFar / zNear);
+  matrix.mData.elements[15] = 0.0f;
+
+  matrix.mData.elements[8] = -(right + left) / (right - left);
+  matrix.mData.elements[9] = -(top + bottom) / (top - bottom);
+  matrix.mData.elements[14] = -(zFar * zNear) / (zFar - zNear);
+  matrix.mData.elements[11] = 1.0f;
+  return matrix;
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F
+Matrix4F::Perspective(f32 verticalFov, f32 aspectRatio, f32 zNear, f32 zFar)
+{
+  const f32 c = 1.0f / tanf(verticalFov / 2.0f);
+
+  Matrix4F matrix;
+  matrix.mData.elements[0] = c / aspectRatio;
+  matrix.mData.elements[5] = c;
+  matrix.mData.elements[10] = zFar / (zFar / zNear);
+  matrix.mData.elements[15] = 0.0f;
+
+  matrix.mData.elements[14] = -(zFar * zNear) / (zFar - zNear);
+  matrix.mData.elements[11] = 1.0f;
   return matrix;
 }
 

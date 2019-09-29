@@ -53,6 +53,7 @@ OL_FORWARD_DECLARE_ENUM(HeapKind : u32);
 OL_FORWARD_DECLARE_ENUM(ResourceState : u32);
 OL_FORWARD_DECLARE_ENUM(PrimitiveTopology : u32);
 OL_FORWARD_DECLARE_ENUM(ComparisonFunction : u32);
+OL_FORWARD_DECLARE_ENUM(CullMode : u32);
 
 /** \class D3D12Util
  * \author Filip Björklund
@@ -119,6 +120,13 @@ public:
    * \return Converted comparison function.
    */
   static D3D12_COMPARISON_FUNC ToComparisonFunc(ComparisonFunction func);
+
+  /** Convert from 'CullMode' to 'D3D12_CULL_MODE'.
+   * \brief Convert to cull mode.
+   * \pararm cullMode Cull mode to convert.
+   * \return Converted cull mode.
+   */
+  static D3D12_CULL_MODE ToCullMode(CullMode cullMode);
 
   /** Set the name of a IDXGIObject.
    * \brief Set IDXGIObject name.

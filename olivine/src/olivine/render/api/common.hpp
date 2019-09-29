@@ -201,6 +201,57 @@ enum class ComparisonFunction : u32
 }
 
 // ========================================================================== //
+// WindingOrder Enumeration
+// ========================================================================== //
+
+namespace olivine {
+
+/** \enum WindingOrder
+ * \author Filip Björklund
+ * \date 29 september 2019 - 14:12
+ * \brief
+ * \details
+ * Enumeration of winding orders for geometry. Clockwise means that front-faces
+ * of the geometry are have vertices that are wound (layed out) in clockwise
+ * order. Counter clockwise is the opposite.
+ */
+enum class WindingOrder : u32
+{
+  /* Front-faces have clockwise wound vertices */
+  kClockwise,
+  /* Front-faces have counter-clockwise wound vertices */
+  kCounterClockwise,
+};
+
+}
+
+// ========================================================================== //
+// CullMode Enumeration
+// ========================================================================== //
+
+namespace olivine {
+
+/** \enum CullMode
+ * \author Filip Björklund
+ * \date 29 september 2019 - 14:10
+ * \brief Culling modes.
+ * \details
+ * Enumeration of culling modes.
+ */
+enum class CullMode : u32
+{
+  /* Cull no faces. Everything is rendered */
+  kNone = 0,
+  /* Cull front faces (What constitutes a front face is determined by the
+   * winding order).*/
+  kFront,
+  /* Cull back faces. These are the opposite of the front faces */
+  kBack
+};
+
+}
+
+// ========================================================================== //
 // Viewport Declaration
 // ========================================================================== //
 

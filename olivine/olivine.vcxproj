@@ -113,6 +113,7 @@
     <ClCompile Include="src\olivine\math\vector4f.cpp" />
     <ClCompile Include="src\olivine\render\api\buffer.cpp" />
     <ClCompile Include="src\olivine\render\api\command_list.cpp" />
+    <ClCompile Include="src\olivine\render\api\constant_buffer.cpp" />
     <ClCompile Include="src\olivine\render\api\context.cpp" />
     <ClCompile Include="src\olivine\render\api\d3d12_util.cpp" />
     <ClCompile Include="src\olivine\render\api\descriptor.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="src\olivine\render\api\buffer.hpp" />
     <ClInclude Include="src\olivine\render\api\command_list.hpp" />
     <ClInclude Include="src\olivine\render\api\common.hpp" />
+    <ClInclude Include="src\olivine\render\api\constant_buffer.hpp" />
     <ClInclude Include="src\olivine\render\api\context.hpp" />
     <ClInclude Include="src\olivine\render\api\d3d12_util.hpp" />
     <ClInclude Include="src\olivine\render\api\descriptor.hpp" />
