@@ -41,8 +41,6 @@
 #include <olivine/render/api/constant_buffer.hpp>
 #include <olivine/render/scene/model.hpp>
 
-#include <thirdparty/directxmath/DirectXMath.h>
-
 // ========================================================================== //
 // Sample
 // ========================================================================== //
@@ -180,6 +178,7 @@ public:
       delete frame.sem;
       delete frame.constBuf;
     }
+    delete mHeapSRV;
     delete mModel;
     delete mPipelineState;
     delete mRootSignature;
@@ -197,7 +196,7 @@ public:
     const Descriptor rt = GetSwapChain()->CurrentRT();
 
     // Update constant buffer
-    const Vector4F cameraPos{ 0.0f, 0.0f, 2.2f };
+    const Vector4F cameraPos{ 0.0f, 0.0f, 2.8f };
     Matrix4F m = Matrix4F::Perspective(45._Deg, 16.0f / 9.0f, 0.1f, 1000.0f) *
                  Matrix4F::Translation(cameraPos) *
                  Matrix4F::RotationY(Time::Now().GetSeconds()) *
