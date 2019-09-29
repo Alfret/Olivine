@@ -20,48 +20,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "olivine/render/api/vertex_buffer.hpp"
+#pragma once
 
 // ========================================================================== //
-// VertexBuffer Implementation
+// Headers
+// ========================================================================== //
+
+// Project headers
+#include "olivine/core/macros.hpp"
+#include "olivine/core/types.hpp"
+
+// ========================================================================== //
+// Limits Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-VertexBuffer::VertexBuffer(const CreateInfo& createInfo)
-  : VertexBuffer(createInfo.size,
-                 createInfo.stride,
-                 createInfo.heapKind,
-                 createInfo.alignment)
+/** \class Constants
+ * \author Filip Björklund
+ * \date 29 september 2019 - 16:50
+ * \brief Numerical constants.
+ * \details
+ * Namespace class with numerical constants.
+ */
+class Constants
 {
-  D3D12_VERTEX_BUFFER_VIEW view;
-  view.BufferLocation = GetResource()->GetGPUVirtualAddress();
-  view.SizeInBytes = static_cast<UINT>(createInfo.size);
-  view.StrideInBytes = createInfo.stride;
-  mView.handle = view;
-}
+  OL_NAMESPACE_CLASS(Constants);
 
-// -------------------------------------------------------------------------- //
-
-VertexBuffer::VertexBuffer(u64 size,
-                           u32 stride,
-                           HeapKind heapKind,
-                           u64 alignment)
-  : mBuffer(size, Buffer::Usage::kVertexBuffer, heapKind, alignment)
-{
-  D3D12_VERTEX_BUFFER_VIEW view;
-  view.BufferLocation = GetResource()->GetGPUVirtualAddress();
-  view.SizeInBytes = static_cast<UINT>(size);
-  view.StrideInBytes = stride;
-  mView.handle = view;
-}
-
-// -------------------------------------------------------------------------- //
-
-void
-VertexBuffer::Write(u8* data, u64 size)
-{
-  mBuffer.Write(data, size);
-}
+public:
+  /* PI (f32) */
+  static constexpr f32 kPi32 = 3.14159265358979323846f;
+  /* PI (f64) */
+  static constexpr f32 kPi64 = 3.141592653589793238462643383279502884;
+};
 
 }

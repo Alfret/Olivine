@@ -69,6 +69,17 @@ public:
    */
   explicit ConstantBuffer(const CreateInfo& createInfo);
 
+  /** Construct a constant buffer from the specified size, heap-kind and
+   * alignment.
+   * \brief Construct constant buffer.
+   * \param size Size in bytes.
+   * \param heapKind Kind of memory heap to place buffer allocation in.
+   * \param alignment Alignment of the buffer memory.
+   */
+  explicit ConstantBuffer(u64 size,
+                          HeapKind heapKind = HeapKind::kDefault,
+                          u64 alignment = Buffer::kDefaultAlign);
+
   /** Destruct the constant buffer.
    * \brief Destruct constant buffer.
    */
@@ -79,7 +90,15 @@ public:
    * \param data Data to write.
    * \param size Size of data to write in bytes.
    */
-  void Write(u8* data, u64 size) { mBuffer.Write(data, size); }
+  void Write(const u8* data, u64 size) { mBuffer.Write(data, size); }
+
+  /** Write data to the buffer from an object of type T.
+   * \tparam T Type of object.
+   * \brief Write object data.
+   * \param object Object to write.
+   */
+  template<typename T>
+  void Write(const T& object);
 
   /** Returns the generic buffer that represents the constant buffer.
    * \brief Returns buffer.
@@ -99,5 +118,20 @@ public:
    */
   ID3D12Resource* GetResource() const { return mBuffer.GetResource(); }
 };
+
+}
+
+// ========================================================================== //
+// ConstantBuffer Implementation
+// ========================================================================== //
+
+namespace olivine {
+
+template<typename T>
+void
+ConstantBuffer::Write(const T& object)
+{
+  Write(reinterpret_cast<const u8*>(&object), sizeof(T));
+}
 
 }

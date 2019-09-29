@@ -79,6 +79,20 @@ public:
    */
   explicit VertexBuffer(const CreateInfo& createInfo);
 
+  /** Construct a vertex buffer from the specified size, stride, heap-kind and
+   * alignment.
+   * \brief Construct vertex buffer.
+   * \param size Size in bytes of the buffer.
+   * \param stride Number of bytes between each consecutive vertex in the
+   * buffer.
+   * \param heapKind Kind of heap to place buffer allocation in.
+   * \param alignment Alignment of the buffer memory.
+   */
+  VertexBuffer(u64 size,
+               u32 stride,
+               HeapKind heapKind = HeapKind::kDefault,
+               u64 alignment = Buffer::kDefaultAlign);
+
   /** Destruct the vertex buffer.
    * \brief Destruct vertex buffer.
    */
@@ -90,6 +104,12 @@ public:
    * \param size Size of data to write in bytes.
    */
   void Write(u8* data, u64 size);
+
+  /** Returns the generic buffer that represents the vertex buffer.
+   * \brief Returns buffer.
+   * \return Buffer.
+   */
+  Buffer& GetBuffer() { return mBuffer; }
 
   /** Returns the generic buffer that represents the vertex buffer.
    * \brief Returns buffer.

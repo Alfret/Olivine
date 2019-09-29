@@ -368,6 +368,18 @@ public:
    */
   void FlushQueues();
 
+  /** Returns the width of the application window.
+   * \brief Returns window width.
+   * \return Window width.
+   */
+  u32 GetWidth() const { return mWindow.width; }
+
+  /** Returns the height of the application window.
+   * \brief Returns window height.
+   * \return Window height.
+   */
+  u32 GetHeight() const { return mWindow.height; }
+
   /** Returns a viewport that represents the entire window.
    * \brief Returns full viewport.
    * \return Viewport.

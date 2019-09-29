@@ -129,6 +129,7 @@
     <ClCompile Include="src\olivine\render\api\upload.cpp" />
     <ClCompile Include="src\olivine\render\api\vertex_buffer.cpp" />
     <ClCompile Include="src\olivine\render\color.cpp" />
+    <ClCompile Include="src\olivine\render\scene\model.cpp" />
     <ClCompile Include="src\thirdparty\alflib\alf_unicode.c" />
     <ClCompile Include="src\thirdparty\d3d12ma\D3D12MemAlloc.cpp" />
     <ClCompile Include="src\thirdparty\fmt\format.cc" />
@@ -184,6 +185,7 @@
     <ClInclude Include="src\olivine\core\traits.hpp" />
     <ClInclude Include="src\olivine\core\types.hpp" />
     <ClInclude Include="src\olivine\core\version.hpp" />
+    <ClInclude Include="src\olivine\math\constants.hpp" />
     <ClInclude Include="src\olivine\math\limits.hpp" />
     <ClInclude Include="src\olivine\math\literals.hpp" />
     <ClInclude Include="src\olivine\math\math.hpp" />
@@ -212,6 +214,7 @@
     <ClInclude Include="src\olivine\render\api\vertex_buffer.hpp" />
     <ClInclude Include="src\olivine\render\color.hpp" />
     <ClInclude Include="src\olivine\render\format.hpp" />
+    <ClInclude Include="src\olivine\render\scene\model.hpp" />
     <ClInclude Include="src\thirdparty\alflib\alf_unicode.h" />
     <ClInclude Include="src\thirdparty\d3d12ma\D3D12MemAlloc.h" />
     <ClInclude Include="src\thirdparty\fmt\core.h" />
@@ -237,6 +240,7 @@
     <ClInclude Include="src\thirdparty\stb\stb_image_write.h" />
     <ClInclude Include="src\thirdparty\stb\stb_rect_pack.h" />
     <ClInclude Include="src\thirdparty\stb\stb_truetype.h" />
+    <ClInclude Include="src\thirdparty\tinyobjloader\tiny_obj_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

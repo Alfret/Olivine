@@ -135,7 +135,7 @@ Buffer::Unmap()
 // -------------------------------------------------------------------------- //
 
 void
-Buffer::Write(u8* data, u64 size)
+Buffer::Write(const u8* data, u64 size)
 {
   void* memory = Map();
   Memory::Copy(memory, data, size);

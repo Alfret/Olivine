@@ -162,4 +162,30 @@ UploadManager::Upload(CommandQueue* queue,
   delete buffer;
 }
 
+// -------------------------------------------------------------------------- //
+
+void
+UploadManager::Upload(CommandQueue* queue,
+                      CommandList* list,
+                      Buffer* dst,
+                      u8* src,
+                      u64 size,
+                      u64 dstOffset)
+{
+  // Create upload buffer
+  auto buffer = new Buffer(size, Buffer::Usage::kNone, HeapKind::kUpload);
+  buffer->SetName(String::Format("TmpUploadBuffer{}", sNextTempBuffer++));
+  buffer->Write(src, size);
+
+  // Upload data
+  list->Reset();
+  list->Copy(dst, buffer, size, dstOffset, 0);
+  list->Close();
+  queue->Submit(list);
+  queue->Flush();
+
+  // Delete buffer
+  delete buffer;
+}
+
 }

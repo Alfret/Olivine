@@ -36,10 +36,13 @@
 namespace olivine {
 
 ConstantBuffer::ConstantBuffer(const CreateInfo& createInfo)
-  : mBuffer(createInfo.size,
-            Buffer::Usage::kConstantBuffer,
-            createInfo.heapKind,
-            createInfo.alignment)
+  : ConstantBuffer(createInfo.size, createInfo.heapKind, createInfo.alignment)
+{}
+
+// -------------------------------------------------------------------------- //
+
+ConstantBuffer::ConstantBuffer(u64 size, HeapKind heapKind, u64 alignment)
+  : mBuffer(size, Buffer::Usage::kConstantBuffer, heapKind, alignment)
 {}
 
 }

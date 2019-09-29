@@ -137,7 +137,7 @@ public:
    * \param data Data to write.
    * \param size Size of data to write, in bytes.
    */
-  void Write(u8* data, u64 size);
+  void Write(const u8* data, u64 size);
 
   /** Returns the size of the buffer in bytes.
    * \brief Returns size.

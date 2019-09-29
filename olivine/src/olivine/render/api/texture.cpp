@@ -44,6 +44,13 @@ Texture::Texture(const CreateInfo& createInfo)
   , mFormat(createInfo.format)
   , mUsages(createInfo.usages)
 {
+  // Assert preconditions
+  Assert(createInfo.width != 0 && createInfo.height != 0,
+         "Invalid texture creation information. Width and height cannot be "
+         "zero (0)");
+  Assert(createInfo.format != Format::kInvalid,
+         "Invalid texture creation information. Format cannot be 'kInvalid'");
+
   Device* device = App::Instance()->GetDevice();
 
   // Setup resource descriptor

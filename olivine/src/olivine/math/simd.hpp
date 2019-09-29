@@ -143,6 +143,12 @@ public:
   /** Returns inner product **/
   f32 InnerProduct(const Float4x32& other) const;
 
+  /** Store the SIMD data in a memory region.
+   * \brief Store data.
+   * \param memory Memory to store in.
+   */
+  void Store(f32* memory) const;
+
   /** Returns X component **/
   f32& GetX() { return mData.components.x; }
 
@@ -166,6 +172,18 @@ public:
 
   /** Returns W component **/
   const f32& GetW() const { return mData.components.w; }
+
+  /** Returns the SIMD data.
+   * \brief Returns SIMD data.
+   * \return SIMD data.
+   */
+  __m128& GetData() { return mData.simd; }
+
+  /** Returns the SIMD data.
+   * \brief Returns SIMD data.
+   * \return SIMD data.
+   */
+  const __m128& GetData() const { return mData.simd; }
 
 private:
   /** Construct from simd data **/

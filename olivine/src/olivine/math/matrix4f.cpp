@@ -134,63 +134,11 @@ Matrix4F::operator-=(const Matrix4F& other)
 
 // -------------------------------------------------------------------------- //
 
-Matrix4F Matrix4F::operator*(const Matrix4F& other) const
-{
-  Float4x32 resultRow0;
-  Float4x32 resultRow1;
-  Float4x32 resultRow2;
-  Float4x32 resultRow3;
-
-  // Get the rows from the other matrix
-  const Float4x32 otherX = other.mData.simd[0];
-  const Float4x32 otherY = other.mData.simd[1];
-  const Float4x32 otherZ = other.mData.simd[2];
-  const Float4x32 otherW = other.mData.simd[3];
-
-  // Get the data pointers to this and result
-  const f32* thisData = mData.elements;
-
-  // Perform operations
-  for (u32 i = 0; i < 4; i++, thisData += 4) {
-    // Retrieve this data
-    Float4x32 tempX = Float4x32(thisData[0]);
-    Float4x32 tempY = Float4x32(thisData[1]);
-    Float4x32 tempZ = Float4x32(thisData[2]);
-    Float4x32 tempW = Float4x32(thisData[3]);
-
-    // Take inner products of rows and cols
-    tempX += otherX;
-    tempY += otherY;
-    tempZ += otherZ;
-    tempW += otherW;
-
-    // Set data
-    resultRow0 += tempX;
-    resultRow1 += tempY;
-    resultRow2 += tempZ;
-    resultRow3 += tempW;
-  }
-
-  return Matrix4F{ resultRow0, resultRow1, resultRow2, resultRow3 };
-}
-
-// -------------------------------------------------------------------------- //
-
 void
 Matrix4F::operator*=(const Matrix4F& other)
 {
-  const Matrix4F result = operator*(other);
+  const Matrix4F result = *this * other;
   memcpy(mData.elements, result.mData.elements, sizeof(f32) * kElementCount);
-}
-
-// -------------------------------------------------------------------------- //
-
-Matrix4F Matrix4F::operator*(f32 scalar) const
-{
-  return Matrix4F{ mData.simd[0] * Float4x32(scalar),
-                   mData.simd[1] * Float4x32(scalar),
-                   mData.simd[2] * Float4x32(scalar),
-                   mData.simd[3] * Float4x32(scalar) };
 }
 
 // -------------------------------------------------------------------------- //
@@ -206,12 +154,104 @@ Matrix4F::operator*=(f32 scalar)
 
 // -------------------------------------------------------------------------- //
 
-Vector4F Matrix4F::operator*(const Vector4F& vector) const
+Matrix4F&
+Matrix4F::Transpose()
 {
-  return Vector4F{ mData.simd[0].InnerProduct(vector.GetData()),
-                   mData.simd[1].InnerProduct(vector.GetData()),
-                   mData.simd[2].InnerProduct(vector.GetData()),
-                   mData.simd[3].InnerProduct(vector.GetData()) };
+  _MM_TRANSPOSE4_PS(mData.simd[0].GetData(),
+                    mData.simd[1].GetData(),
+                    mData.simd[2].GetData(),
+                    mData.simd[3].GetData());
+  return *this;
+}
+
+// -------------------------------------------------------------------------- //
+
+Vector4F
+Matrix4F::GetColumn(u32 column) const
+{
+  Assert(column < 4, "Invalid matrix column");
+  return Vector4F{ mData.elements[column],
+                   mData.elements[4 + column],
+                   mData.elements[8 + column],
+                   mData.elements[12 + column] };
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F operator*(const Matrix4F& lhs, const Matrix4F& rhs)
+{
+  Matrix4F output;
+
+  // Get the rows from the other matrix
+  const Float4x32 otherX = rhs.mData.simd[0];
+  const Float4x32 otherY = rhs.mData.simd[1];
+  const Float4x32 otherZ = rhs.mData.simd[2];
+  const Float4x32 otherW = rhs.mData.simd[3];
+
+  // Get the data pointers to this and result
+  const f32* thisData = lhs.mData.elements;
+  f32* outputData = output.mData.elements;
+
+  // Perform operations
+  for (u32 i = 0; i < 4; i++, thisData += 4, outputData += 4) {
+    // Retrieve this data
+    Float4x32 tempX = Float4x32(thisData[0]);
+    Float4x32 tempY = Float4x32(thisData[1]);
+    Float4x32 tempZ = Float4x32(thisData[2]);
+    Float4x32 tempW = Float4x32(thisData[3]);
+
+    // Take inner products of rows and cols
+    tempX *= otherX;
+    tempY *= otherY;
+    tempZ *= otherZ;
+    tempW *= otherW;
+
+    // Store result
+    Float4x32 tempR = tempX + tempY + tempZ + tempW;
+    tempR.Store(outputData);
+  }
+
+  return output;
+}
+
+// -------------------------------------------------------------------------- //
+
+Vector4F operator*(const Matrix4F& lhs, const Vector4F& rhs)
+{
+  return Vector4F{ lhs.mData.simd[0].InnerProduct(rhs.GetData()),
+                   lhs.mData.simd[1].InnerProduct(rhs.GetData()),
+                   lhs.mData.simd[2].InnerProduct(rhs.GetData()),
+                   lhs.mData.simd[3].InnerProduct(rhs.GetData()) };
+}
+
+// -------------------------------------------------------------------------- //
+
+Vector4F operator*(const Vector4F& lhs, const Matrix4F& rhs)
+{
+  return Vector4F{ lhs.GetData().InnerProduct(rhs.GetColumn(0).GetData()),
+                   lhs.GetData().InnerProduct(rhs.GetColumn(1).GetData()),
+                   lhs.GetData().InnerProduct(rhs.GetColumn(2).GetData()),
+                   lhs.GetData().InnerProduct(rhs.GetColumn(3).GetData()) };
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F operator*(const Matrix4F& lhs, f32 rhs)
+{
+  return Matrix4F{ lhs.mData.simd[0] * Float4x32(rhs),
+                   lhs.mData.simd[1] * Float4x32(rhs),
+                   lhs.mData.simd[2] * Float4x32(rhs),
+                   lhs.mData.simd[3] * Float4x32(rhs) };
+}
+
+// -------------------------------------------------------------------------- //
+
+Matrix4F operator*(f32 lhs, const Matrix4F& rhs)
+{
+  return Matrix4F{ rhs.mData.simd[0] * Float4x32(lhs),
+                   rhs.mData.simd[1] * Float4x32(lhs),
+                   rhs.mData.simd[2] * Float4x32(lhs),
+                   rhs.mData.simd[3] * Float4x32(lhs) };
 }
 
 // -------------------------------------------------------------------------- //
@@ -401,11 +441,11 @@ Matrix4F::Perspective(f32 verticalFov, f32 aspectRatio, f32 zNear, f32 zFar)
   Matrix4F matrix;
   matrix.mData.elements[0] = c / aspectRatio;
   matrix.mData.elements[5] = c;
-  matrix.mData.elements[10] = zFar / (zFar / zNear);
+  matrix.mData.elements[10] = zFar / (zFar - zNear);
   matrix.mData.elements[15] = 0.0f;
 
-  matrix.mData.elements[14] = -(zFar * zNear) / (zFar - zNear);
-  matrix.mData.elements[11] = 1.0f;
+  matrix.mData.elements[11] = -(zFar * zNear) / (zFar - zNear);
+  matrix.mData.elements[14] = 1.0f;
   return matrix;
 }
 

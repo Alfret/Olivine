@@ -47,6 +47,7 @@ OL_FORWARD_DECLARE(PipelineState);
 OL_FORWARD_DECLARE(VertexBuffer);
 OL_FORWARD_DECLARE(IndexBuffer);
 OL_FORWARD_DECLARE(DescriptorHeap);
+OL_FORWARD_DECLARE(ConstantBuffer);
 OL_FORWARD_DECLARE_ENUM(PrimitiveTopology : u32);
 
 /** \class CommandList
@@ -245,6 +246,15 @@ public:
    * \param count Number of heaps to set. Maximum value is two (2).
    */
   void SetDescriptorHeaps(const DescriptorHeap* const* heaps, u32 count);
+
+  /** Set a root CBV descriptor at the specified parameter index for the
+   * graphics pipeline.
+   * \brief Set root descriptor (CBV)
+   * \param paramIndex Parameter index.
+   * \param constantBuffer Constant buffer to set descriptor for.
+   */
+  void SetRootDescriptorGraphics(u32 paramIndex,
+                                 ConstantBuffer* constantBuffer);
 
   /** Set a root descriptor table at the specified parmeter index for the
    * graphics pipeline.

@@ -35,6 +35,7 @@
 #include "olivine/render/api/pipeline_state.hpp"
 #include "olivine/render/api/vertex_buffer.hpp"
 #include "olivine/render/api/index_buffer.hpp"
+#include "olivine/render/api/constant_buffer.hpp"
 #include "olivine/render/color.hpp"
 
 // ========================================================================== //
@@ -319,6 +320,16 @@ CommandList::SetDescriptorHeaps(const DescriptorHeap* const* heaps, u32 count)
     _heaps[i] = heaps[i]->GetHandle();
   }
   mHandle->SetDescriptorHeaps(count, _heaps);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+CommandList::SetRootDescriptorGraphics(u32 paramIndex,
+                                       ConstantBuffer* constantBuffer)
+{
+  mHandle->SetGraphicsRootConstantBufferView(
+    paramIndex, constantBuffer->GetResource()->GetGPUVirtualAddress());
 }
 
 // -------------------------------------------------------------------------- //

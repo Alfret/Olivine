@@ -219,6 +219,14 @@ Float4x32::InnerProduct(const Float4x32& other) const
 
 // -------------------------------------------------------------------------- //
 
+void
+Float4x32::Store(f32* memory) const
+{
+  _mm_store_ps(memory, mData.simd);
+}
+
+// -------------------------------------------------------------------------- //
+
 Float4x32::Float4x32(__m128 simd)
 {
   mData.simd = simd;

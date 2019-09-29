@@ -145,6 +145,27 @@ public:
                      CommandList* list,
                      Texture* dst,
                      Image* src);
+
+  /** Utility function for quickly uploading data from a memory to a buffer.
+   * \note This function is not very performant as it will block until the
+   * upload has been completed and creates a lot of temporary resources. It also
+   * does not work well with command lists that are used for other things.
+   * \note This function flushes the command queue to ensure that uploading is
+   * complete.
+   * \brief Upload memory to buffer.
+   * \param queue Command queue to perform upload with.
+   * \param list Command list to perform upload with.
+   * \param dst Destination buffer.
+   * \param src Source memory.
+   * \param size Size of memory to upload, in bytes.
+   * \param dstOffset Offset in destination buffer to upload to.
+   */
+  static void Upload(CommandQueue* queue,
+                     CommandList* list,
+                     Buffer* dst,
+                     u8* src,
+                     u64 size,
+                     u64 dstOffset = 0);
 };
 
 }

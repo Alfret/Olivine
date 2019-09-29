@@ -23,6 +23,13 @@
 #pragma once
 
 // ========================================================================== //
+// Headers
+// ========================================================================== //
+
+// Project headers
+#include "olivine/math/constants.hpp"
+
+// ========================================================================== //
 // Functions
 // ========================================================================== //
 
@@ -40,6 +47,12 @@ constexpr unsigned long long operator"" _KiB(unsigned long long kibibytes)
 constexpr unsigned long long operator"" _MiB(unsigned long long mebibytes)
 {
   return mebibytes * 1024 * 1024;
+}
+
+/** Literal for creating a radian value from degrees **/
+constexpr long double operator"" _Deg(long double degrees)
+{
+  return f32((degrees / 180.0) * Constants::kPi64);
 }
 
 }

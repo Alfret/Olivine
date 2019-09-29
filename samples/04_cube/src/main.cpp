@@ -24,8 +24,11 @@
 #include <olivine/core/console.hpp>
 #include <olivine/core/file/path.hpp>
 #include <olivine/core/image.hpp>
-#include <olivine/math/vector2f.hpp>
+#include <olivine/core/time.hpp>
+#include <olivine/math/literals.hpp>
 #include <olivine/math/vector3f.hpp>
+#include <olivine/math/vector4f.hpp>
+#include <olivine/math/matrix4f.hpp>
 #include <olivine/render/color.hpp>
 #include <olivine/render/api/swap_chain.hpp>
 #include <olivine/render/api/command_list.hpp>
@@ -35,7 +38,10 @@
 #include <olivine/render/api/vertex_buffer.hpp>
 #include <olivine/render/api/index_buffer.hpp>
 #include <olivine/render/api/texture.hpp>
-#include <olivine/render/api/upload.hpp>
+#include <olivine/render/api/constant_buffer.hpp>
+#include <olivine/render/scene/model.hpp>
+
+#include <thirdparty/directxmath/DirectXMath.h>
 
 // ========================================================================== //
 // Sample
@@ -56,6 +62,9 @@ public:
     Semaphore* sem = nullptr;
     /* Next value to wait for with semaphore */
     u32 semVal = 0;
+
+    /* Constant buffer for transforms */
+    ConstantBuffer* constBuf;
   };
 
   /** Vertex structure **/
@@ -81,10 +90,10 @@ private:
   /* Pipeline state */
   PipelineState* mPipelineState = nullptr;
 
-  /* Vertex buffer */
-  VertexBuffer* mVertexBuffer = nullptr;
-  /* Index buffer */
-  IndexBuffer* mIndexBuffer = nullptr;
+  /* Model */
+  Model* mModel = nullptr;
+  /* SRV heap */
+  DescriptorHeap* mHeapSRV = nullptr;
 
 public:
   /** Construct **/
@@ -96,10 +105,31 @@ public:
       frame.list = new CommandList(CommandQueue::Kind::kGraphics);
       frame.sem = new Semaphore;
       frame.semVal = 0;
+      frame.constBuf = new ConstantBuffer(sizeof(Matrix4F), HeapKind::kUpload);
     }
 
     // Create root signature
     RootSignature::CreateInfo rootSignatureInfo;
+    RootSignature::RootTableRange rootTableRange0 =
+      RootSignature::RootTableRange{
+        RootSignature::RootDescriptorKind::kSrv, 1, 0, 0
+      };
+    RootSignature::RootTable rootTable;
+    rootTable.ranges = { rootTableRange0 };
+    RootSignature::RootParameter rootParam0 =
+      RootSignature::RootParameter(rootTable, ShaderStage::kPixel);
+    RootSignature::RootDescriptor rootDescriptor0 = {
+      0, 0, RootSignature::RootDescriptorKind::kCbv
+    };
+    RootSignature::RootParameter rootParam1 = RootSignature::RootParameter(
+      rootDescriptor0, ShaderStage::kVertex | ShaderStage::kPixel);
+    rootSignatureInfo.parameters.push_back(rootParam0);
+    rootSignatureInfo.parameters.push_back(rootParam1);
+    RootSignature::StaticSampler staticSampler0;
+    staticSampler0.reg = 0;
+    staticSampler0.accessibleStages = ShaderStage::kPixel;
+    staticSampler0.magFilter = Sampler::Filter::kLinear;
+    rootSignatureInfo.staticSamplers.push_back(staticSampler0);
     mRootSignature = new RootSignature(rootSignatureInfo);
 
     // Create pipeline state
@@ -114,10 +144,15 @@ public:
       PipelineState::VertexAttribute{
         "POSITION", 0, PipelineState::VertexAttributeKind::kFloat3 },
       PipelineState::VertexAttribute{
-        "COLOR",
+        "NORMAL",
         0,
-        PipelineState::VertexAttributeKind::kByte4,
-        offsetof(Vertex, color) }
+        PipelineState::VertexAttributeKind::kFloat3,
+        offsetof(Model::Vertex, normals) },
+      PipelineState::VertexAttribute{
+        "TEXCOORD",
+        0,
+        PipelineState::VertexAttributeKind::kFloat2,
+        offsetof(Model::Vertex, uv) }
     };
     pipelineStateInfo.cullMode = CullMode::kBack;
     mPipelineState = new PipelineState(pipelineStateInfo);
@@ -126,33 +161,14 @@ public:
     // Create upload command list
     mUploadList = new CommandList(CommandQueue::Kind::kCopy);
 
-    // Create vertex buffer
-    Vertex vertices[4];
-    vertices[0].pos = Vector3F{ -0.28f, -0.5f, 0.0f };
-    vertices[0].color = Color::kWhite;
-    vertices[1].pos = Vector3F{ -0.28f, 0.5f, 0.0f };
-    vertices[1].color = Color::kWhite;
-    vertices[2].pos = Vector3F{ 0.28f, 0.5f, 0.0f };
-    vertices[2].color = Color::kWhite;
-    vertices[3].pos = Vector3F{ 0.28f, -0.5f, 0.0f };
-    vertices[3].color = Color::kWhite;
-    VertexBuffer::CreateInfo vertexBufferInfo;
-    vertexBufferInfo.size = sizeof vertices;
-    vertexBufferInfo.stride = sizeof Vertex;
-    vertexBufferInfo.heapKind = HeapKind::kUpload;
-    mVertexBuffer = new VertexBuffer(vertexBufferInfo);
-    mVertexBuffer->Write((u8*)vertices, sizeof vertices);
-    mVertexBuffer->SetName("MainVertexBuffer");
+    // Load model
+    mModel = new Model(Path{ "res/cube.obj" });
+    mModel->Upload(GetCopyQueue(), mUploadList);
 
-    // Create index buffer
-    u16 indices[6] = { 0, 1, 2, 0, 2, 3 };
-    IndexBuffer::CreateInfo indexBufferInfo;
-    indexBufferInfo.count = 6;
-    indexBufferInfo.format = IndexBuffer::Format::kU16;
-    indexBufferInfo.heapKind = HeapKind::kUpload;
-    mIndexBuffer = new IndexBuffer(indexBufferInfo);
-    mIndexBuffer->Write(indices, 6);
-    mIndexBuffer->SetName("MainIndexBuffer");
+    // Create SRV heap
+    mHeapSRV = new DescriptorHeap(Descriptor::Kind::kCbvSrvUav, 1, true);
+    mHeapSRV->WriteDescriptorSRV(0, mModel->GetMaterial().mAlbedo);
+    mHeapSRV->SetName("MainShaderResourceHeap");
   }
 
   /** Cleanup **/
@@ -162,9 +178,9 @@ public:
     for (Frame& frame : mFrames) {
       delete frame.list;
       delete frame.sem;
+      delete frame.constBuf;
     }
-    delete mIndexBuffer;
-    delete mVertexBuffer;
+    delete mModel;
     delete mPipelineState;
     delete mRootSignature;
     delete mUploadList;
@@ -180,6 +196,15 @@ public:
     Texture* buffer = GetSwapChain()->CurrentBuffer();
     const Descriptor rt = GetSwapChain()->CurrentRT();
 
+    // Update constant buffer
+    const Vector4F cameraPos{ 0.0f, 0.0f, 2.2f };
+    Matrix4F m = Matrix4F::Perspective(45._Deg, 16.0f / 9.0f, 0.1f, 1000.0f) *
+                 Matrix4F::Translation(cameraPos) *
+                 Matrix4F::RotationY(Time::Now().GetSeconds()) *
+                 Matrix4F::RotationX(Time::Now().GetSeconds() / 2.0f);
+
+    frame.constBuf->Write(m);
+
     // Record commands
     frame.list->Reset();
     frame.list->TransitionResource(
@@ -192,9 +217,11 @@ public:
     frame.list->SetPrimitiveTopology(PrimitiveTopology::kTriangleList);
     frame.list->SetRootSignatureGraphics(mRootSignature);
     frame.list->SetPipelineState(mPipelineState);
-    frame.list->SetVertexBuffer(mVertexBuffer);
-    frame.list->SetIndexBuffer(mIndexBuffer);
-    frame.list->DrawIndexed(6);
+    frame.list->SetVertexBuffer(mModel->GetVertexBuffer());
+    frame.list->SetDescriptorHeap(mHeapSRV);
+    frame.list->SetRootDescriptorTableGraphics(0, mHeapSRV->At(0));
+    frame.list->SetRootDescriptorGraphics(1, frame.constBuf);
+    frame.list->Draw(mModel->GetVertexCount());
 
     frame.list->TransitionResource(
       buffer, ResourceState::kRenderTarget, ResourceState::kPresent);
@@ -219,8 +246,8 @@ main()
   // Create app
   App::CreateInfo appInfo{};
   appInfo.title = "04 - Cube";
-  appInfo.window.width = 800;
-  appInfo.window.height = 450;
+  appInfo.window.width = 1280;
+  appInfo.window.height = 720;
   appInfo.flags = App::Flag::kExitOnEscape;
   appInfo.toggleFullscreenKey = Key::kF;
   Sample app(appInfo);

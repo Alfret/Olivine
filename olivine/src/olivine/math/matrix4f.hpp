@@ -96,23 +96,38 @@ public:
   /** Compound subtraction **/
   void operator-=(const Matrix4F& other);
 
-  /** Multiplication **/
-  Matrix4F operator*(const Matrix4F& other) const;
-
   /** Compound multiplication **/
   void operator*=(const Matrix4F& other);
 
   /** Matrix-Scalar multiplication **/
-  Matrix4F operator*(f32 scalar) const;
-
-  /** Matrix-Scalar multiplication **/
   void operator*=(f32 scalar);
 
-  /** Matrix-Vector multiplication **/
-  Vector4F operator*(const Vector4F& vector) const;
+  /** Transpose the matrix.
+   * \brief Transpose matrix.
+   * \return Itself.
+   */
+  Matrix4F& Transpose();
 
   /** Returns the matrix data **/
   OL_NODISCARD f32* GetData() { return mData.elements; }
+
+  /** Returns a column from the matrix. Note that columns are not layed out
+   * linear in memory thus retrieveing columns is costly.
+   * \brief Returns column.
+   * \param column Column to return.
+   * \return Column.
+   */
+  Vector4F GetColumn(u32 column) const;
+
+  friend Matrix4F operator*(const Matrix4F& lhs, const Matrix4F& rhs);
+
+  friend Vector4F operator*(const Matrix4F& lhs, const Vector4F& rhs);
+
+  friend Vector4F operator*(const Vector4F& lhs, const Matrix4F& rhs);
+
+  friend Matrix4F operator*(const Matrix4F& lhs, f32 rhs);
+
+  friend Matrix4F operator*(f32 lhs, const Matrix4F& rhs);
 
 private:
   /** Construct matrix from 4 simd values for rows **/
