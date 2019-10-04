@@ -193,7 +193,7 @@ DescriptorHeap::WriteDescriptorSRV(u32 index, Texture* texture, Format format)
 // -------------------------------------------------------------------------- //
 
 Descriptor
-DescriptorHeap::At(u32 index)
+DescriptorHeap::At(u32 index) const
 {
   Assert(index < mCount,
          "Descriptor index out of bounds: {} not in [0, {})",

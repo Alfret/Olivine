@@ -49,6 +49,16 @@ constexpr unsigned long long operator"" _MiB(unsigned long long mebibytes)
   return mebibytes * 1024 * 1024;
 }
 
+// -------------------------------------------------------------------------- //
+
+/** Literal for creating a bytes value from gibibytes **/
+constexpr unsigned long long operator"" _GiB(unsigned long long gibibytes)
+{
+  return gibibytes * 1024 * 1024 * 1024;
+}
+
+// -------------------------------------------------------------------------- //
+
 /** Literal for creating a radian value from degrees **/
 constexpr long double operator"" _Deg(long double degrees)
 {

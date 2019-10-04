@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03_texturing", "samples\03_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04_cube", "samples\04_cube\04_cube.vcxproj", "{F3D9AA3F-6221-45AB-9F40-39BB000CF471}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05_models", "samples\05_models\05_models.vcxproj", "{F80D1011-2758-4C12-AF45-583396FA8639}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -57,6 +59,14 @@ Global
 		{F3D9AA3F-6221-45AB-9F40-39BB000CF471}.Release|x64.Build.0 = Release|x64
 		{F3D9AA3F-6221-45AB-9F40-39BB000CF471}.Release|x86.ActiveCfg = Release|Win32
 		{F3D9AA3F-6221-45AB-9F40-39BB000CF471}.Release|x86.Build.0 = Release|Win32
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Debug|x64.ActiveCfg = Debug|x64
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Debug|x64.Build.0 = Debug|x64
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Debug|x86.ActiveCfg = Debug|Win32
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Debug|x86.Build.0 = Debug|Win32
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Release|x64.ActiveCfg = Release|x64
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Release|x64.Build.0 = Release|x64
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Release|x86.ActiveCfg = Release|Win32
+		{F80D1011-2758-4C12-AF45-583396FA8639}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

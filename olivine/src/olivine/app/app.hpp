@@ -148,6 +148,8 @@ private:
   {
     /* GLFW handle */
     GLFWwindow* handle;
+    /* Title */
+    String title;
     /* Width */
     u32 width;
     /* Height */
@@ -392,6 +394,20 @@ public:
    * \return Rectangle.
    */
   Rectangle EntireRectangle() const;
+
+  /** Returns the current title of the application window.
+   * \brief Returns app window title.
+   * \return Window title.
+   */
+  const String& GetWindowTitle() const { return mWindow.title; }
+
+  /** Set the title of the application window.
+   *\note This is not necesarily the same as the title of the application
+   * (only if never set after creation).
+   * \brief Set app window title.
+   * \param title Title to set.
+   */
+  void SetWindowTitle(const String& title);
 
 private:
   /** Center the app window **/

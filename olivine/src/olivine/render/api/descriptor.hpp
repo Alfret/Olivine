@@ -180,7 +180,7 @@ public:
    * \param index Index to get descriptor at.
    * \return Descriptor at index
    */
-  Descriptor At(u32 index);
+  Descriptor At(u32 index) const;
 
   /** Returns the descriptor in the heap at the specified index.
    * \brief Returns descriptor at index.

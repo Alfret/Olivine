@@ -117,6 +117,7 @@
     <ClCompile Include="src\olivine\render\api\context.cpp" />
     <ClCompile Include="src\olivine\render\api\d3d12_util.cpp" />
     <ClCompile Include="src\olivine\render\api\descriptor.cpp" />
+    <ClCompile Include="src\olivine\render\api\descriptor_allocator.cpp" />
     <ClCompile Include="src\olivine\render\api\device.cpp" />
     <ClCompile Include="src\olivine\render\api\index_buffer.cpp" />
     <ClCompile Include="src\olivine\render\api\pipeline_state.cpp" />
@@ -201,6 +202,7 @@
     <ClInclude Include="src\olivine\render\api\context.hpp" />
     <ClInclude Include="src\olivine\render\api\d3d12_util.hpp" />
     <ClInclude Include="src\olivine\render\api\descriptor.hpp" />
+    <ClInclude Include="src\olivine\render\api\descriptor_allocator.hpp" />
     <ClInclude Include="src\olivine\render\api\device.hpp" />
     <ClInclude Include="src\olivine\render\api\index_buffer.hpp" />
     <ClInclude Include="src\olivine\render\api\pipeline_state.hpp" />

@@ -55,7 +55,6 @@ App::App(const CreateInfo& createInfo)
   , mFlags(createInfo.flags)
   , mUPS(createInfo.ups)
   , mKeyToggleFullscreen(createInfo.toggleFullscreenKey)
-  , mWindow{ nullptr, createInfo.window.width, createInfo.window.height }
 {
   Assert(sInstance == nullptr, "Only one application can exist at one time");
   sInstance = this;
@@ -82,6 +81,10 @@ App::App(const CreateInfo& createInfo)
   mCopyQueue->SetName("CopyQueue");
 
   // Create window
+  mWindow.handle = nullptr;
+  mWindow.title = mTitle;
+  mWindow.width = createInfo.window.width;
+  mWindow.height = createInfo.window.height;
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
   glfwWindowHint(GLFW_RESIZABLE,
@@ -386,6 +389,15 @@ Rectangle
 App::EntireRectangle() const
 {
   return Rectangle::Make(mWindow.width, mWindow.height);
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+App::SetWindowTitle(const String& title)
+{
+  mWindow.title = title;
+  glfwSetWindowTitle(mWindow.handle, mWindow.title.GetUTF8());
 }
 
 // -------------------------------------------------------------------------- //

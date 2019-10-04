@@ -109,3 +109,11 @@ public:                                                                        \
 public:                                                                        \
   cls(const cls&) = default;                                                   \
   cls& operator=(const cls&) = default;
+
+// -------------------------------------------------------------------------- //
+
+/* Macro to declare a class as default-copyable */
+#define OL_DEFAULT_MOVE(cls)                                                   \
+public:                                                                        \
+  cls(cls&&) noexcept = default;                                               \
+  cls& operator=(cls&&) noexcept = default;

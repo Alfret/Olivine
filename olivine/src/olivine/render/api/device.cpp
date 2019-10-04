@@ -28,7 +28,9 @@
 
 // Project headers
 #include "olivine/app/app.hpp"
+#include "olivine/math/limits.hpp"
 #include "olivine/render/api/context.hpp"
+#include "olivine/render/api/descriptor_allocator.hpp"
 
 // ========================================================================== //
 // Device Implementation
@@ -47,7 +49,7 @@ void
 Device::Init(const CreateInfo& createInfo)
 {
   // Choose adapter
-  ArrayList<IDXGIAdapter1*> adapters = EnumerateAdapters();
+  ArrayList<IDXGIAdapter3*> adapters = EnumerateAdapters();
   // TODO(Filip Björklund): Implement selection
   mAdapter = adapters[0];
   for (IDXGIAdapter1* adapter : adapters) {
@@ -76,6 +78,16 @@ Device::Init(const CreateInfo& createInfo)
   allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_NONE;
   hresult = D3D12MA::CreateAllocator(&allocatorDesc, &mAllocator);
   Assert(SUCCEEDED(hresult), "Failed to create device allocator");
+
+  // Create descriptor allocators
+  mDescriptorAllocatorCbvUavSrv =
+    new DescriptorAllocator(Descriptor::Kind::kCbvSrvUav, false, 2048);
+  mDescriptorAllocatorSampler =
+    new DescriptorAllocator(Descriptor::Kind::kSampler, false, 128);
+  mDescriptorAllocatorRtv =
+    new DescriptorAllocator(Descriptor::Kind::kRtv, false, 32);
+  mDescriptorAllocatorDsv =
+    new DescriptorAllocator(Descriptor::Kind::kDsv, false, 16);
 
   // Check ray-tracing support
   D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
@@ -107,6 +119,12 @@ Device::Init(const CreateInfo& createInfo)
 
 Device::~Device()
 {
+  // Destroy descriptor allocators
+  delete mDescriptorAllocatorDsv;
+  delete mDescriptorAllocatorRtv;
+  delete mDescriptorAllocatorSampler;
+  delete mDescriptorAllocatorCbvUavSrv;
+
   // Release allocator
   mAllocator->Release();
   mAllocator = nullptr;
@@ -122,17 +140,56 @@ Device::~Device()
 
 // -------------------------------------------------------------------------- //
 
-ArrayList<IDXGIAdapter1*>
+u64
+Device::GetMemoryUsage()
+{
+  DXGI_QUERY_VIDEO_MEMORY_INFO info;
+  const HRESULT hresult = mAdapter->QueryVideoMemoryInfo(
+    0x00, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &info);
+  if (FAILED(hresult)) {
+    return Limits::kU64Max;
+  }
+  return info.CurrentUsage;
+}
+
+// -------------------------------------------------------------------------- //
+
+u64
+Device::GetMemoryBudget()
+{
+  DXGI_QUERY_VIDEO_MEMORY_INFO info;
+  const HRESULT hresult = mAdapter->QueryVideoMemoryInfo(
+    0x00, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &info);
+  if (FAILED(hresult)) {
+    return Limits::kU64Max;
+  }
+  return info.Budget;
+}
+
+// -------------------------------------------------------------------------- //
+
+ArrayList<IDXGIAdapter3*>
 Device::EnumerateAdapters()
 {
   App* app = App::Instance();
   Context* ctx = app->GetContext();
 
-  ArrayList<IDXGIAdapter1*> adapters;
-  IDXGIAdapter1* adapter;
+  ArrayList<IDXGIAdapter3*> adapters;
+  IDXGIAdapter1* _adapter;
   UINT index = 0;
-  while (ctx->GetFactory()->EnumAdapters1(index++, &adapter) !=
+  while (ctx->GetFactory()->EnumAdapters1(index++, &_adapter) !=
          DXGI_ERROR_NOT_FOUND) {
+    D3D12Util::SetName(_adapter, "EnumAdapter1({})", index);
+
+    // Query adapter3 interface
+    IDXGIAdapter3* adapter;
+    const HRESULT hresult = _adapter->QueryInterface(IID_PPV_ARGS(&adapter));
+    _adapter->Release();
+    if (FAILED(hresult)) {
+      continue;
+    }
+    D3D12Util::SetName(adapter, "EnumAdapter3({})", index);
+
     // Make sure that it's not a software adapter and that D3D12 is supported
     DXGI_ADAPTER_DESC1 adapterDesc;
     adapter->GetDesc1(&adapterDesc);

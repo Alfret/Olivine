@@ -130,22 +130,75 @@ public:
 
   /** Set the name of a IDXGIObject.
    * \brief Set IDXGIObject name.
+   * \param object Object to set name of.
+   * \param name Name to set for object.
    */
   static void SetName(IDXGIObject* object, const String& name);
 
+  /** Set the name of a IDXGIObject.
+   * \brief Set IDXGIObject name.
+   * \param object Object to set name of.
+   * \param nameFormat Format string for name to set for object.
+   * \param arguments Arguments to format string.
+   */
+  template<typename... ARGS>
+  static void SetName(IDXGIObject* object,
+                      const String& nameFormat,
+                      ARGS&&... arguments);
+
   /** Set the name of a ID3D12Object.
    * \brief Set ID3D12Object name.
+   * \param object Object to set name of.
+   * \param name Name to set for object.
    */
   static void SetName(ID3D12Object* object, const String& name);
+
+  /** Set the name of a ID3D12Object.
+   * \brief Set ID3D12Object name.
+   * \param object Object to set name of.
+   * \param nameFormat Format string for name to set for object.
+   * \param arguments Arguments to format string.
+   */
+  template<typename... ARGS>
+  static void SetName(ID3D12Object* object,
+                      const String& nameFormat,
+                      ARGS&&... arguments);
 };
 
-// -------------------------------------------------------------------------- //
+}
+
+// ========================================================================== //
+// D3D12Util Implementation
+// ========================================================================== //
+namespace olivine {
 
 template<typename... ARGS>
 void
 D3D12Util::Assert(HRESULT hresult, const String& format, ARGS&&... arguments)
 {
   Assert(hresult, String::Format(format, std::forward<ARGS>(arguments)...));
+}
+
+// -------------------------------------------------------------------------- //
+
+template<typename... ARGS>
+void
+D3D12Util::SetName(IDXGIObject* object,
+                   const String& nameFormat,
+                   ARGS&&... arguments)
+{
+  SetName(object, String::Format(nameFormat, std::forward<ARGS>(arguments)...));
+}
+
+// -------------------------------------------------------------------------- //
+
+template<typename... ARGS>
+void
+D3D12Util::SetName(ID3D12Object* object,
+                   const String& nameFormat,
+                   ARGS&&... arguments)
+{
+  SetName(object, String::Format(nameFormat, std::forward<ARGS>(arguments)...));
 }
 
 }

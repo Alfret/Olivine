@@ -51,7 +51,7 @@ public:
   /* PI (f32) */
   static constexpr f32 kPi32 = 3.14159265358979323846f;
   /* PI (f64) */
-  static constexpr f32 kPi64 = 3.141592653589793238462643383279502884;
+  static constexpr f64 kPi64 = 3.141592653589793238462643383279502884;
 };
 
 }
