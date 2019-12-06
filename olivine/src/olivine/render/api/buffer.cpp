@@ -135,10 +135,10 @@ Buffer::Unmap()
 // -------------------------------------------------------------------------- //
 
 void
-Buffer::Write(const u8* data, u64 size)
+Buffer::Write(const u8* data, u64 size, u64 offset)
 {
   void* memory = Map();
-  Memory::Copy(memory, data, size);
+  Memory::Copy(static_cast<u8*>(memory) + offset, data, size);
   Unmap();
 }
 

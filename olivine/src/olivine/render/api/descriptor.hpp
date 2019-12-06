@@ -234,6 +234,19 @@ public:
    */
   Descriptor operator[](Index index) const;
 
+  /** Copy descriptors from the 'src' descriptor set into this descriptor set at
+   * the specified offsets. The number of descriptors to copy is also specified
+   * with 'count'.
+   * \param src Source descriptor set.
+   * \param dstOff Offset in destination descriptor set.
+   * \param srcOff Offset in source descriptor set.
+   * \param count Number of descriptors to copy.
+   */
+  void CopyFrom(const DescriptorHeap* src,
+                u32 count,
+                u32 dstOff = 0,
+                u32 srcOff = 0);
+
   /** Returns whether or not the descriptor heap is shader visible.
    * \brief Returns whether heap is shader visible.
    * \return True if the descriptor heap is shader visible.

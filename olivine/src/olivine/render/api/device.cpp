@@ -71,6 +71,26 @@ Device::Init(const CreateInfo& createInfo)
   Assert(SUCCEEDED(hresult), "Failed to create device");
   D3D12Util::SetName(mHandle, "Device");
 
+#if defined(_DEBUG)
+  // Disable false positive about descriptor ranges overlapping
+  ID3D12InfoQueue* infoQueue;
+  hresult = mHandle->QueryInterface(__uuidof(ID3D12InfoQueue),
+                                    reinterpret_cast<void**>(&infoQueue));
+  if (SUCCEEDED(hresult)) {
+    D3D12_MESSAGE_ID blockedIds[] = {
+      D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+      D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+      D3D12_MESSAGE_ID_COPY_DESCRIPTORS_INVALID_RANGES
+    };
+    D3D12_INFO_QUEUE_FILTER filter = {};
+    filter.DenyList.pIDList = blockedIds;
+    filter.DenyList.NumIDs = 3;
+    infoQueue->AddRetrievalFilterEntries(&filter);
+    infoQueue->AddStorageFilterEntries(&filter);
+  }
+
+#endif
+
   // Create allocator
   D3D12MA::ALLOCATOR_DESC allocatorDesc{};
   allocatorDesc.pDevice = mHandle;

@@ -56,7 +56,9 @@ OL_FORWARD_DECLARE(CommandQueue);
  */
 class Loader
 {
-private:
+public:
+  /* Maximum number of materials */
+  static constexpr u32 MAX_MAT = 64;
   /* Number of SRV used per material (One per texture) */
   static constexpr u32 SRV_PER_MAT = 4;
 
@@ -68,7 +70,6 @@ public:
     kUnknownError,
   };
 
-private:
   /* Model reference */
   struct ModelRef
   {
@@ -94,6 +95,8 @@ private:
 public:
   Loader();
 
+  ~Loader();
+
   /** This functions triggers the loading of all the models and material from
    * disc. It also manages the uploading of data to the GPU for the resources
    * that requires it.
@@ -114,6 +117,22 @@ public:
                      const Path& pathRoughness,
                      const Path& pathMetallic,
                      const Path& pathNormal);
+
+  Model* GetModel(const String& name);
+
+  const Model* GetModel(const String& name) const;
+
+  Material* GetMaterial(const String& name);
+
+  const Material* GetMaterial(const String& name) const;
+
+  const DescriptorHeap* GetSrvHeap() const { return mSrvHeap; }
+
+  u32 GetMaterialSrvHeapOffset(const Material* material) const;
+
+  u32 GetMaterialSrvHeapOffset(const String& name) const;
 };
+
+using LoaderRes = Loader::Result;
 
 }

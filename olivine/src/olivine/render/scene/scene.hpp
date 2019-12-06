@@ -26,6 +26,9 @@
 // Headers
 // ========================================================================== //
 
+// Standard headers
+#include <vector>
+
 // Project headers
 #include "olivine/core/macros.hpp"
 
@@ -35,9 +38,13 @@
 
 namespace olivine {
 
+OL_FORWARD_DECLARE(CommandQueue);
+OL_FORWARD_DECLARE(CommandList);
+
 OL_FORWARD_DECLARE(Path);
 OL_FORWARD_DECLARE(Model);
 OL_FORWARD_DECLARE(Loader);
+OL_FORWARD_DECLARE(Entity);
 
 /** \class Scene
  * \author Filip Björklund
@@ -60,25 +67,42 @@ private:
   /* Resource loader */
   Loader* mLoader;
 
+  /* List of entities in the scene */
+  std::vector<Entity*> mEntities;
+
 public:
   /** Construct an empty scene
    *
    */
   Scene();
 
-  /** Load the data for the entire scene from a file at the specified path. If
-   * there is anything else loaded into the scene before this call it will be
-   * deleted.
-   * \brief Load entire scene from file.
-   * \param path Path to scene file.
-   * \return Result.
+  /**
+   *
    */
-  Result Load(const Path& path);
+  ~Scene();
+
+  /**
+   *
+   */
+  void Load(CommandQueue* queue, CommandList* list);
+
+  /**
+   *
+   */
+  void AddEntity(Entity* entity) { mEntities.push_back(entity); }
 
   /**
    *
    */
   Loader* GetLoader() const { return mLoader; }
+
+  /**
+   *
+   */
+  const std::vector<Entity*>& GetEntities() const { return mEntities; }
+
+public:
+  static Scene FromFile(const Path& path);
 };
 
 }

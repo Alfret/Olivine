@@ -28,70 +28,71 @@
 
 // Project headers
 #include "olivine/core/macros.hpp"
-#include "olivine/core/string.hpp"
-#include "olivine/core/file/path.hpp"
+#include "olivine/render/api/swap_chain.hpp"
 
 // ========================================================================== //
-// Material Declaration
+// Renderer Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-OL_FORWARD_DECLARE(Texture);
 OL_FORWARD_DECLARE(CommandList);
-OL_FORWARD_DECLARE(CommandQueue);
+OL_FORWARD_DECLARE(Semaphore);
+OL_FORWARD_DECLARE(ConstantBuffer);
+OL_FORWARD_DECLARE(RootSignature);
+OL_FORWARD_DECLARE(PipelineState);
+OL_FORWARD_DECLARE(DescriptorHeap);
 
-/** \class Material
+OL_FORWARD_DECLARE(Scene);
+
+/** \class Renderer
  * \author Filip Björklund
- * \date 06 december 2019 - 12:54
+ * \date 06 december 2019 - 15:59
  * \brief
  * \details
  */
-class Material
+class Renderer
 {
 private:
-  /* Name of the material */
-  String mName;
+  /* Max entities that can be rendered in a scene */
+  static constexpr u32 MAX_ENTITY = 128;
+  /* Max lights that can be rendered in a scene */
+  static constexpr u32 MAX_LIGHT = 16;
 
-  /* Albedo path */
-  Path mPathAlbedo;
-  /* Albedo path */
-  Path mPathRoughness;
-  /* Albedo path */
-  Path mPathMetallic;
-  /* Albedo path */
-  Path mPathNormal;
+  /* Material descriptor start */
+  static constexpr u32 DESC_START_MAT = 0;
 
-  /* Albedo texture */
-  Texture* mTexAlbedo = nullptr;
-  /* Roughness texture */
-  Texture* mTexRoughness = nullptr;
-  /* Metallic texture */
-  Texture* mTexMetallic = nullptr;
-  /* Normal texture */
-  Texture* mTexNormal = nullptr;
+  /* Per-frame resources */
+  struct Frame
+  {
+    /* Constant buffer for per-model data */
+    ConstantBuffer* modelCB;
+    /* Constant buffer for light data */
+    ConstantBuffer* lightCB;
+  };
+
+private:
+  /* Frame resources */
+  Frame mFrames[SwapChain::kBufferCount];
+
+  /* GPU-visible descriptor heap */
+  DescriptorHeap* mDescriptorHeap;
+
+  /* Root signature for the PBR shader */
+  RootSignature* mRootSignature;
+  /* PBR forward shader */
+  PipelineState* mPipelineState;
 
 public:
-  Material(const String& name,
-           const Path& pathAlbedo,
-           const Path& pathRoughness,
-           const Path& pathMetallic,
-           const Path& pathNormal);
+  Renderer();
 
-  ~Material();
+  ~Renderer();
 
-  /**
-   *
-   */
-  void Upload(CommandQueue* queue, CommandList* list);
+  void Render(CommandList* list, const Scene* scene);
 
-  Texture* GetAlbedoTexture() const { return mTexAlbedo; }
-
-  Texture* GetRoughnessTexture() const { return mTexRoughness; }
-
-  Texture* GetMetallicTexture() const { return mTexMetallic; }
-
-  Texture* GetNormalTexture() const { return mTexNormal; }
+private:
+  /* Setup the root signature and the PSO */
+  void SetupPSO();
 };
 
 }

@@ -35,13 +35,13 @@
 #include <olivine/render/api/command_list.hpp>
 #include <olivine/render/api/common.hpp>
 #include <olivine/render/api/root_signature.hpp>
-#include <olivine/render/api/pipeline_state.hpp>
-#include <olivine/render/api/vertex_buffer.hpp>
-#include <olivine/render/api/index_buffer.hpp>
 #include <olivine/render/api/texture.hpp>
 #include <olivine/render/api/constant_buffer.hpp>
 #include <olivine/render/scene/scene.hpp>
 #include <olivine/render/scene/loader.hpp>
+#include <olivine/render/scene/model.hpp>
+#include <olivine/render/scene/entity.hpp>
+#include <olivine/render/renderer.hpp>
 
 // ========================================================================== //
 // Sample
@@ -85,8 +85,12 @@ private:
   /* Command list for uploading */
   CommandList* mUploadList;
 
+  /* Renderer */
+  Renderer* mRenderer = nullptr;
   /* Scene */
   Scene* mScene = nullptr;
+  /* Sphere entity */
+  Entity* mEntity = nullptr;
 
 public:
   /** Construct **/
@@ -104,19 +108,27 @@ public:
     // Create upload command list
     mUploadList = new CommandList(CommandQueue::Kind::kCopy);
 
+    // Create renderer
+    mRenderer = new Renderer;
+
     // Load scene
     mScene = new Scene;
     Loader* loader = mScene->GetLoader();
-    Loader::Result r =
-      loader->AddModel("sphere", Path{ "res/sphere/sphere.obj" });
+    LoaderRes r = loader->AddModel("sphere", Path{ "res/sphere/sphere.obj" });
     Assert(r == Loader::Result::kSuccess, "Failed to add sphere model");
-    r = loader->AddMaterial("copper",
-                            Path{ "res/material/copper/albedo.png" },
-                            Path{ "res/material/copper/roughness.png" },
-                            Path{ "res/material/copper/metallic.png" },
-                            Path{ "res/material/copper/normal.png" });
-    Assert(r == Loader::Result::kSuccess, "Failed to add copper material");
-    loader->Load(GetCopyQueue(), mUploadList);
+    r = loader->AddMaterial("brass",
+                            Path{ "res/material/brass/albedo.png" },
+                            Path{ "res/material/brass/roughness.png" },
+                            Path{ "res/material/brass/metallic.png" },
+                            Path{ "res/material/brass/normal.png" });
+    Assert(r == Loader::Result::kSuccess, "Failed to add brass material");
+    Model* sphere = loader->GetModel("sphere");
+    sphere->SetMaterial("brass");
+    mScene->Load(GetCopyQueue(), mUploadList);
+
+    // Create sphere entity
+    mEntity = new Entity(sphere);
+    mScene->AddEntity(mEntity);
   }
 
   /** Cleanup **/
@@ -129,6 +141,9 @@ public:
       delete frame.constBuf;
     }
     delete mUploadList;
+    delete mEntity;
+    delete mScene;
+    delete mRenderer;
   }
 
   /** Render **/
@@ -144,17 +159,14 @@ public:
     // Update constant buffer
     const f32 rotX = f32(Time::Now().GetSeconds() / 2.0f);
     const f32 rotY = f32(Time::Now().GetSeconds());
-    // const f32 rotX = GetGamepadAxis(GamepadAxis::kLeftY);
-    // const f32 rotY = GetGamepadAxis(GamepadAxis::kLeftX);
     const Vector4F modelPos{ 0.0f, 0.0f, 2.8f };
     const Matrix4F m =
       Matrix4F::Perspective(f32(45._Deg), 16.0f / 9.0f, 0.1f, 1000.0f) *
       Matrix4F::Translation(modelPos) * Matrix4F::RotationY(rotY) *
-      Matrix4F::RotationX(rotX);
+      Matrix4F::RotationX(rotX) * Matrix4F::Scale(0.2f);
+    mEntity->SetTransform(m);
 
-    frame.constBuf->Write(m);
-
-    // Record commands
+    // Begin render commands
     frame.list->Reset();
     frame.list->TransitionResource(
       buffer, ResourceState::kPresent, ResourceState::kRenderTarget);
@@ -163,6 +175,10 @@ public:
     frame.list->SetViewport(EntireViewport());
     frame.list->SetScissorRectangle(EntireRectangle());
 
+    // Render scene
+    mRenderer->Render(frame.list, mScene);
+
+    // Transition back to present
     frame.list->TransitionResource(
       buffer, ResourceState::kRenderTarget, ResourceState::kPresent);
     frame.list->Close();

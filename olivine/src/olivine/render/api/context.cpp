@@ -55,10 +55,14 @@ Context::Context(const CreateInfo& createInfo)
   hresult = DXGIGetDebugInterface1(
     0, __uuidof(IDXGIInfoQueue), reinterpret_cast<void**>(&infoQueue));
   if (SUCCEEDED(hresult)) {
+    // Set to break on error, corruption and warnings
     infoQueue->SetBreakOnSeverity(
       DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
     infoQueue->SetBreakOnSeverity(
       DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+    infoQueue->SetBreakOnSeverity(
+      DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_WARNING, TRUE);
+
     infoQueue->Release();
   }
   factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;

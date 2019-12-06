@@ -129,6 +129,8 @@
     <ClCompile Include="src\olivine\render\api\upload.cpp" />
     <ClCompile Include="src\olivine\render\api\vertex_buffer.cpp" />
     <ClCompile Include="src\olivine\render\color.cpp" />
+    <ClCompile Include="src\olivine\render\renderer.cpp" />
+    <ClCompile Include="src\olivine\render\scene\entity.cpp" />
     <ClCompile Include="src\olivine\render\scene\loader.cpp" />
     <ClCompile Include="src\olivine\render\scene\material.cpp" />
     <ClCompile Include="src\olivine\render\scene\model.cpp" />
@@ -217,6 +219,8 @@
     <ClInclude Include="src\olivine\render\api\vertex_buffer.hpp" />
     <ClInclude Include="src\olivine\render\color.hpp" />
     <ClInclude Include="src\olivine\render\format.hpp" />
+    <ClInclude Include="src\olivine\render\renderer.hpp" />
+    <ClInclude Include="src\olivine\render\scene\entity.hpp" />
     <ClInclude Include="src\olivine\render\scene\loader.hpp" />
     <ClInclude Include="src\olivine\render\scene\material.hpp" />
     <ClInclude Include="src\olivine\render\scene\model.hpp" />

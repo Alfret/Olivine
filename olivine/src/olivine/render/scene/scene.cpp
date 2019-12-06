@@ -48,17 +48,32 @@ Scene::Scene()
 
 // -------------------------------------------------------------------------- //
 
-Scene::Result
-Scene::Load(const Path& path)
+Scene::~Scene()
+{
+  delete mLoader;
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+Scene::Load(CommandQueue* queue, CommandList* list)
+{
+  mLoader->Load(queue, list);
+}
+
+// -------------------------------------------------------------------------- //
+
+Scene
+Scene::FromFile(const Path& path)
 {
   /*
-  tinygltf::Model model;
-  tinygltf::TinyGLTF loader;
-  std::string err, warn;
-  bool r =
-    loader.LoadASCIIFromFile(&model, &err, &warn, path.GetPathStringUTF8(), 1);
-  */
-  return Result::kSuccess;
+ tinygltf::Model model;
+ tinygltf::TinyGLTF loader;
+ std::string err, warn;
+ bool r =
+   loader.LoadASCIIFromFile(&model, &err, &warn, path.GetPathStringUTF8(), 1);
+ */
+  return Scene{};
 }
 
 }

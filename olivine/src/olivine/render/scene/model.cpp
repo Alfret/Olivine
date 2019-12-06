@@ -33,7 +33,6 @@
 #include "olivine/core/image.hpp"
 #include "olivine/render/api/vertex_buffer.hpp"
 #include "olivine/render/api/upload.hpp"
-#include "olivine/render/api/texture.hpp"
 #include "olivine/render/scene/loader.hpp"
 
 // Thirdparty headers
@@ -61,9 +60,6 @@ Model::~Model()
 
   // Delete vertex buffer
   delete mVertexBuffer;
-
-  // Delete material
-  delete mMaterial.mAlbedo;
 }
 
 // -------------------------------------------------------------------------- //
@@ -73,10 +69,10 @@ Model::Load(Loader* loader, const Path& path)
 {
   switch (path.GetExtension()) {
     case Path::Extension::kObj: {
-      return LoadObj(path);
+      return LoadObj(loader, path);
     }
     case Path::Extension::kGltf: {
-      return LoadGltf(path);
+      return LoadGltf(loader, path);
     }
     default: {
       return Error::kInvalidFileType;
@@ -96,32 +92,12 @@ Model::Upload(CommandQueue* queue, CommandList* list)
                         buffer,
                         reinterpret_cast<u8*>(mVertices),
                         mVertexCount * sizeof(Vertex));
-
-  // Create and upload texture
-  Image image;
-  const Image::Result result = image.Load(mMaterial.mAlbedoPath);
-  Assert(result == Image::Result::kSuccess,
-         "Failed to load image ({})",
-         mMaterial.mAlbedoPath);
-
-  Texture::CreateInfo texInfo;
-  texInfo.width = image.GetWidth();
-  texInfo.height = image.GetHeight();
-  texInfo.dimension = Texture::Dim::k2D;
-  texInfo.format = image.GetFormat() == Image::Format::kRGB
-                     ? Format::kInvalid
-                     : Format::kR8G8B8A8Unorm;
-  texInfo.heapKind = HeapKind::kDefault;
-  texInfo.usages = Texture::Usage::kShaderResource;
-  mMaterial.mAlbedo = new Texture(texInfo);
-  mMaterial.mAlbedo->SetName(mName + "MaterialAlbedoTex");
-  UploadManager::Upload(queue, list, mMaterial.mAlbedo, &image);
 }
 
 // -------------------------------------------------------------------------- //
 
 Model::Error
-Model::LoadObj(const Path& path)
+Model::LoadObj(Loader* loader, const Path& path)
 {
   // Material reader
   class MatReader : public tinyobj::MaterialReader
@@ -212,12 +188,30 @@ Model::LoadObj(const Path& path)
   mVertexBuffer->SetName(mName + "VB");
 
   // Load material
-  Assert(materials.size() > 0, "Mesh does not have any material");
-  tinyobj::material_t& material = materials[0];
+  for (auto material : materials) {
+    Path p0 = { "" };
+    if (!material.diffuse_texname.empty()) {
+      p0 = path.GetDirectory() + material.diffuse_texname.c_str();
+    }
 
-  mMaterial.mAlbedoPath =
-    (path.GetDirectory() + material.diffuse_texname.c_str())
-      .GetPathStringUTF8();
+    Path p1 = { "" };
+    if (!material.roughness_texname.empty()) {
+      p1 = path.GetDirectory() + material.roughness_texname.c_str();
+    }
+
+    Path p2 = { "" };
+    if (!material.metallic_texname.empty()) {
+      p2 = path.GetDirectory() + material.metallic_texname.c_str();
+    }
+
+    Path p3 = { "" };
+    if (!material.normal_texname.empty()) {
+      p3 = path.GetDirectory() + material.normal_texname.c_str();
+    }
+
+    loader->AddMaterial(material.name.c_str(), p0, p1, p2, p3);
+    mMaterialName = material.name.c_str();
+  }
 
   // Success
   return Error::kSuccess;
@@ -226,14 +220,15 @@ Model::LoadObj(const Path& path)
 // -------------------------------------------------------------------------- //
 
 Model::Error
-Model::LoadGltf(const Path& path)
+Model::LoadGltf(Loader* loader, const Path& path)
 {
-
+  /*
   tinygltf::Model model;
   tinygltf::TinyGLTF loader;
   std::string err, warn;
   bool r =
     loader.LoadASCIIFromFile(&model, &err, &warn, path.GetPathStringUTF8(), 1);
+  */
 
   return Error::kMissingMaterial;
 }

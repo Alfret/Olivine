@@ -251,6 +251,23 @@ Descriptor DescriptorHeap::operator[](Index index) const
 // -------------------------------------------------------------------------- //
 
 void
+DescriptorHeap::CopyFrom(const DescriptorHeap* src,
+                         u32 count,
+                         u32 dstOff,
+                         u32 srcOff)
+{
+  Assert(mKind == src->mKind,
+         "Can only copy between descriptor heaps of the same kind");
+  Device* device = App::Instance()->GetDevice();
+  const D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = At(dstOff).CPU();
+  const D3D12_CPU_DESCRIPTOR_HANDLE srcHandle = src->At(srcOff).CPU();
+  device->GetHandle()->CopyDescriptorsSimple(
+    count, dstHandle, srcHandle, Descriptor::ToDescriptorType(mKind));
+}
+
+// -------------------------------------------------------------------------- //
+
+void
 DescriptorHeap::SetName(const String& name)
 {
   D3D12Util::SetName(mHandle, name);

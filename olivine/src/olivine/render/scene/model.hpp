@@ -78,26 +78,17 @@ public:
     Vector2F uv;
   };
 
-  /* Material */
-  struct Material
-  {
-    /* Albedo texture path */
-    String mAlbedoPath;
-    /* Albedo texture */
-    Texture* mAlbedo = nullptr;
-  };
-
 private:
   /* Name of model */
   String mName;
+
+  /* Name of material for texture. Or empty for no material */
+  String mMaterialName;
 
   /* Vertex data */
   Vertex* mVertices = nullptr;
   /* Number of vertices */
   u32 mVertexCount;
-
-  /* Material */
-  Material mMaterial;
 
   /* Vertex buffer */
   VertexBuffer* mVertexBuffer = nullptr;
@@ -133,17 +124,17 @@ public:
   /**
    *
    */
-  Material& GetMaterial() { return mMaterial; }
+  const String& GetMaterial() const { return mMaterialName; }
 
   /**
    *
    */
-  const Material& GetMaterial() const { return mMaterial; }
+  void SetMaterial(const String& name) { mMaterialName = name; }
 
 private:
-  Error LoadObj(const Path& path);
+  Error LoadObj(Loader* loader, const Path& path);
 
-  Error LoadGltf(const Path& path);
+  Error LoadGltf(Loader* loader, const Path& path);
 };
 
 }

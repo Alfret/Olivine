@@ -20,78 +20,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include "olivine/render/scene/entity.hpp"
 
 // ========================================================================== //
 // Headers
 // ========================================================================== //
 
 // Project headers
-#include "olivine/core/macros.hpp"
-#include "olivine/core/string.hpp"
-#include "olivine/core/file/path.hpp"
+#include "olivine/core/assert.hpp"
+#include "olivine/render/scene/loader.hpp"
 
 // ========================================================================== //
-// Material Declaration
+// Entity Implementation
 // ========================================================================== //
 
 namespace olivine {
 
-OL_FORWARD_DECLARE(Texture);
-OL_FORWARD_DECLARE(CommandList);
-OL_FORWARD_DECLARE(CommandQueue);
+Entity::Entity(const Model* model)
+  : mModel(model)
+  , mTransform(Matrix4F::Identity())
+{}
 
-/** \class Material
- * \author Filip Björklund
- * \date 06 december 2019 - 12:54
- * \brief
- * \details
- */
-class Material
+// -------------------------------------------------------------------------- //
+
+Entity::Entity(const Loader* loader, const String& name)
+  : mTransform(Matrix4F::Identity())
 {
-private:
-  /* Name of the material */
-  String mName;
-
-  /* Albedo path */
-  Path mPathAlbedo;
-  /* Albedo path */
-  Path mPathRoughness;
-  /* Albedo path */
-  Path mPathMetallic;
-  /* Albedo path */
-  Path mPathNormal;
-
-  /* Albedo texture */
-  Texture* mTexAlbedo = nullptr;
-  /* Roughness texture */
-  Texture* mTexRoughness = nullptr;
-  /* Metallic texture */
-  Texture* mTexMetallic = nullptr;
-  /* Normal texture */
-  Texture* mTexNormal = nullptr;
-
-public:
-  Material(const String& name,
-           const Path& pathAlbedo,
-           const Path& pathRoughness,
-           const Path& pathMetallic,
-           const Path& pathNormal);
-
-  ~Material();
-
-  /**
-   *
-   */
-  void Upload(CommandQueue* queue, CommandList* list);
-
-  Texture* GetAlbedoTexture() const { return mTexAlbedo; }
-
-  Texture* GetRoughnessTexture() const { return mTexRoughness; }
-
-  Texture* GetMetallicTexture() const { return mTexMetallic; }
-
-  Texture* GetNormalTexture() const { return mTexNormal; }
-};
+  mModel = loader->GetModel(name);
+  Assert(
+    mModel != nullptr, "Entity could not be created with model '{}'", name);
+}
 
 }

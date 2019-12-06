@@ -38,15 +38,59 @@ namespace olivine {
 
 Loader::Loader()
 {
-  mSrvHeap =
-    new DescriptorHeap(Descriptor::Kind::kCbvSrvUav, SRV_PER_MAT * 100, false);
+  mSrvHeap = new DescriptorHeap(
+    Descriptor::Kind::kCbvSrvUav, SRV_PER_MAT * MAX_MAT, false);
+}
+
+// -------------------------------------------------------------------------- //
+
+Loader::~Loader()
+{
+  for (std::pair<String, MatRef> elem : mMaterials) {
+    MatRef& ref = elem.second;
+    delete ref.material;
+  }
+  for (std::pair<String, ModelRef> elem : mModels) {
+    ModelRef& ref = elem.second;
+    delete ref.model;
+  }
+
+  delete mSrvHeap;
 }
 
 // -------------------------------------------------------------------------- //
 
 void
 Loader::Load(CommandQueue* queue, CommandList* list)
-{}
+{
+  // Upload materials
+  for (std::pair<String, MatRef> elem : mMaterials) {
+    elem.second.material->Upload(queue, list);
+  }
+  // Upload models
+  for (std::pair<String, ModelRef> elem : mModels) {
+    elem.second.model->Upload(queue, list);
+  }
+
+  // Write material descriptors
+  for (std::pair<String, MatRef> elem : mMaterials) {
+    MatRef& matRef = elem.second;
+    mSrvHeap->WriteDescriptorSRV(matRef.idxStart,
+                                 matRef.material->GetAlbedoTexture());
+    if (matRef.material->GetRoughnessTexture()) {
+      mSrvHeap->WriteDescriptorSRV(matRef.idxStart + 1,
+                                   matRef.material->GetRoughnessTexture());
+    }
+    if (matRef.material->GetMetallicTexture()) {
+      mSrvHeap->WriteDescriptorSRV(matRef.idxStart + 2,
+                                   matRef.material->GetAlbedoTexture());
+    }
+    if (matRef.material->GetNormalTexture()) {
+      mSrvHeap->WriteDescriptorSRV(matRef.idxStart + 3,
+                                   matRef.material->GetNormalTexture());
+    }
+  }
+}
 
 // -------------------------------------------------------------------------- //
 
@@ -93,7 +137,80 @@ Loader::AddMaterial(const String& name,
 
   // Add material
   mMaterials[name] = MatRef{ material, idxAlbedo };
-  return Result::kUnknownError;
+  return Result::kSuccess;
+}
+
+// -------------------------------------------------------------------------- //
+
+Model*
+Loader::GetModel(const String& name)
+{
+  const auto obj = mModels.find(name);
+  if (obj == mModels.end()) {
+    return nullptr;
+  }
+  return obj->second.model;
+}
+
+// -------------------------------------------------------------------------- //
+
+const Model*
+Loader::GetModel(const String& name) const
+{
+  const auto obj = mModels.find(name);
+  if (obj == mModels.end()) {
+    return nullptr;
+  }
+  return obj->second.model;
+}
+
+// -------------------------------------------------------------------------- //
+
+Material*
+Loader::GetMaterial(const String& name)
+{
+  const auto obj = mMaterials.find(name);
+  if (obj == mMaterials.end()) {
+    return nullptr;
+  }
+  return obj->second.material;
+}
+
+// -------------------------------------------------------------------------- //
+
+const Material*
+Loader::GetMaterial(const String& name) const
+{
+  const auto obj = mMaterials.find(name);
+  if (obj == mMaterials.end()) {
+    return nullptr;
+  }
+  return obj->second.material;
+}
+
+// -------------------------------------------------------------------------- //
+
+u32
+Loader::GetMaterialSrvHeapOffset(const Material* material) const
+{
+  for (std::pair<String, MatRef> elem : mMaterials) {
+    if (elem.second.material == material) {
+      return elem.second.idxStart;
+    }
+  }
+  return Limits::kU32Max;
+}
+
+// -------------------------------------------------------------------------- //
+
+u32
+Loader::GetMaterialSrvHeapOffset(const String& name) const
+{
+  const auto obj = mMaterials.find(name);
+  if (obj == mMaterials.end()) {
+    return Limits::kU32Max;
+  }
+  return obj->second.idxStart;
 }
 
 }

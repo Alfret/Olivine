@@ -28,70 +28,43 @@
 
 // Project headers
 #include "olivine/core/macros.hpp"
-#include "olivine/core/string.hpp"
-#include "olivine/core/file/path.hpp"
+#include "olivine/math/matrix4f.hpp"
 
 // ========================================================================== //
-// Material Declaration
+// Entity Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-OL_FORWARD_DECLARE(Texture);
-OL_FORWARD_DECLARE(CommandList);
-OL_FORWARD_DECLARE(CommandQueue);
+OL_FORWARD_DECLARE(String);
 
-/** \class Material
+OL_FORWARD_DECLARE(Loader);
+OL_FORWARD_DECLARE(Model);
+
+/** \class Entity
  * \author Filip Björklund
- * \date 06 december 2019 - 12:54
+ * \date 06 december 2019 - 17:17
  * \brief
  * \details
  */
-class Material
+class Entity
 {
 private:
-  /* Name of the material */
-  String mName;
-
-  /* Albedo path */
-  Path mPathAlbedo;
-  /* Albedo path */
-  Path mPathRoughness;
-  /* Albedo path */
-  Path mPathMetallic;
-  /* Albedo path */
-  Path mPathNormal;
-
-  /* Albedo texture */
-  Texture* mTexAlbedo = nullptr;
-  /* Roughness texture */
-  Texture* mTexRoughness = nullptr;
-  /* Metallic texture */
-  Texture* mTexMetallic = nullptr;
-  /* Normal texture */
-  Texture* mTexNormal = nullptr;
+  /* Model */
+  const Model* mModel = nullptr;
+  /* Transform */
+  Matrix4F mTransform;
 
 public:
-  Material(const String& name,
-           const Path& pathAlbedo,
-           const Path& pathRoughness,
-           const Path& pathMetallic,
-           const Path& pathNormal);
+  explicit Entity(const Model* model);
 
-  ~Material();
+  explicit Entity(const Loader* loader, const String& name);
 
-  /**
-   *
-   */
-  void Upload(CommandQueue* queue, CommandList* list);
+  const Model* GetModel() const { return mModel; }
 
-  Texture* GetAlbedoTexture() const { return mTexAlbedo; }
+  const Matrix4F& GetTransform() const { return mTransform; }
 
-  Texture* GetRoughnessTexture() const { return mTexRoughness; }
-
-  Texture* GetMetallicTexture() const { return mTexMetallic; }
-
-  Texture* GetNormalTexture() const { return mTexNormal; }
+  void SetTransform(const Matrix4F& transform) { mTransform = transform; }
 };
 
 }

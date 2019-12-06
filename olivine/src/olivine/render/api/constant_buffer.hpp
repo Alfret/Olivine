@@ -89,16 +89,21 @@ public:
    * \brief Write data.
    * \param data Data to write.
    * \param size Size of data to write in bytes.
+   * \param offset Offset to write at
    */
-  void Write(const u8* data, u64 size) { mBuffer.Write(data, size); }
+  void Write(const u8* data, u64 size, u64 offset)
+  {
+    mBuffer.Write(data, size);
+  }
 
   /** Write data to the buffer from an object of type T.
    * \tparam T Type of object.
    * \brief Write object data.
    * \param object Object to write.
+   * \param offset Offset to write at
    */
   template<typename T>
-  void Write(const T& object);
+  void Write(const T& object, u64 offset);
 
   /** Returns the generic buffer that represents the constant buffer.
    * \brief Returns buffer.
@@ -129,9 +134,9 @@ namespace olivine {
 
 template<typename T>
 void
-ConstantBuffer::Write(const T& object)
+ConstantBuffer::Write(const T& object, u64 offset)
 {
-  Write(reinterpret_cast<const u8*>(&object), sizeof(T));
+  Write(reinterpret_cast<const u8*>(&object), sizeof(T), offset * sizeof(T));
 }
 
 }

@@ -40,6 +40,8 @@
 #include <olivine/render/api/texture.hpp>
 #include <olivine/render/api/constant_buffer.hpp>
 #include <olivine/render/scene/model.hpp>
+#include <olivine/render/scene/loader.hpp>
+#include <olivine/render/scene/material.hpp>
 
 // ========================================================================== //
 // Sample
@@ -88,6 +90,8 @@ private:
   /* Pipeline state */
   PipelineState* mPipelineState = nullptr;
 
+  /* Loader */
+  Loader* mLoader = nullptr;
   /* Model */
   Model* mModel = nullptr;
   /* SRV heap */
@@ -160,13 +164,16 @@ public:
     mUploadList = new CommandList(CommandQueue::Kind::kCopy);
 
     // Load model
-    mModel = new Model();
-    mModel->Load(nullptr, Path{ "res/cube.obj" });
-    mModel->Upload(GetCopyQueue(), mUploadList);
+    mLoader = new Loader;
+    mLoader->AddModel("cube", Path{ "res/cube.obj" });
+    mModel = mLoader->GetModel("cube");
+    mLoader->Load(GetCopyQueue(), mUploadList);
 
     // Create SRV heap
+    String matName = mModel->GetMaterial();
+    Texture* albedo = mLoader->GetMaterial(matName)->GetAlbedoTexture();
     mHeapSRV = new DescriptorHeap(Descriptor::Kind::kCbvSrvUav, 1, true);
-    mHeapSRV->WriteDescriptorSRV(0, mModel->GetMaterial().mAlbedo);
+    mHeapSRV->WriteDescriptorSRV(0, albedo);
     mHeapSRV->SetName("MainShaderResourceHeap");
   }
 
@@ -180,7 +187,7 @@ public:
       delete frame.constBuf;
     }
     delete mHeapSRV;
-    delete mModel;
+    delete mLoader;
     delete mPipelineState;
     delete mRootSignature;
     delete mUploadList;
@@ -212,7 +219,7 @@ public:
       Matrix4F::Translation(modelPos) * Matrix4F::RotationY(rotY) *
       Matrix4F::RotationX(rotX) * Matrix4F::Scale(1.1f);
 
-    frame.constBuf->Write(m);
+    frame.constBuf->Write(m, 0);
 
     // Record commands
     frame.list->Reset();
