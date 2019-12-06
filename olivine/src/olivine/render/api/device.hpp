@@ -103,15 +103,6 @@ private:
   /* Allocator */
   D3D12MA::Allocator* mAllocator;
 
-  /* CBV/UAV/SRV descriptor allocator */
-  DescriptorAllocator* mDescriptorAllocatorCbvUavSrv;
-  /* Sampler descriptor allocator */
-  DescriptorAllocator* mDescriptorAllocatorSampler;
-  /* RTV descriptor allocator */
-  DescriptorAllocator* mDescriptorAllocatorRtv;
-  /* DSV descriptor allocator */
-  DescriptorAllocator* mDescriptorAllocatorDsv;
-
   /* Device features */
   Features mFeatures;
 
@@ -154,42 +145,6 @@ public:
    * \return Memory budget in bytes.
    */
   u64 GetMemoryBudget();
-
-  /** Returns the CBV/UAV/SRV descriptor allocator.
-   * \brief returns CBV/UAV/SRV descriptor allocator.
-   * \return CBV/UAV/SRV descriptor allocator.
-   */
-  DescriptorAllocator* GetDescriptorAllocatorCbvUavSrv() const
-  {
-    return mDescriptorAllocatorCbvUavSrv;
-  }
-
-  /** Returns the sampler descriptor allocator.
-   * \brief returns sampler descriptor allocator.
-   * \return sampler descriptor allocator.
-   */
-  DescriptorAllocator* GetDescriptorAllocatorSampler() const
-  {
-    return mDescriptorAllocatorSampler;
-  }
-
-  /** Returns the RTV descriptor allocator.
-   * \brief returns RTV descriptor allocator.
-   * \return RTV descriptor allocator.
-   */
-  DescriptorAllocator* GetDescriptorAllocatorRTV() const
-  {
-    return mDescriptorAllocatorRtv;
-  }
-
-  /** Returns the DSV descriptor allocator.
-   * \brief returns DSV descriptor allocator.
-   * \return DSV descriptor allocator.
-   */
-  DescriptorAllocator* GetDescriptorAllocatorDsv() const
-  {
-    return mDescriptorAllocatorDsv;
-  }
 
   /** Returns the handle of the D3D12 device.
    * \brief Returns handle.

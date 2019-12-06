@@ -186,6 +186,32 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.3</ShaderModel>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\olivine\olivine.vcxproj">
+      <Project>{f419b72a-6271-4c02-99b8-6a6ad60754f4}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\helmet\FlightHelmet.bin" />
+    <None Include="res\helmet\FlightHelmet.gltf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\helmet\FlightHelmet_baseColor.png" />
+    <Image Include="res\helmet\FlightHelmet_baseColor1.png" />
+    <Image Include="res\helmet\FlightHelmet_baseColor2.png" />
+    <Image Include="res\helmet\FlightHelmet_baseColor3.png" />
+    <Image Include="res\helmet\FlightHelmet_baseColor4.png" />
+    <Image Include="res\helmet\FlightHelmet_normal.png" />
+    <Image Include="res\helmet\FlightHelmet_normal1.png" />
+    <Image Include="res\helmet\FlightHelmet_normal2.png" />
+    <Image Include="res\helmet\FlightHelmet_normal3.png" />
+    <Image Include="res\helmet\FlightHelmet_normal4.png" />
+    <Image Include="res\helmet\FlightHelmet_occlusionRoughnessMetallic.png" />
+    <Image Include="res\helmet\FlightHelmet_occlusionRoughnessMetallic1.png" />
+    <Image Include="res\helmet\FlightHelmet_occlusionRoughnessMetallic2.png" />
+    <Image Include="res\helmet\FlightHelmet_occlusionRoughnessMetallic3.png" />
+    <Image Include="res\helmet\FlightHelmet_occlusionRoughnessMetallic4.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

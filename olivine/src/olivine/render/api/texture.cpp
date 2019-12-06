@@ -29,7 +29,6 @@
 // Project headers
 #include "olivine/app/app.hpp"
 #include "olivine/render/api/device.hpp"
-#include "olivine/render/api/descriptor_allocator.hpp"
 
 // ========================================================================== //
 // Texture Implementation
@@ -93,9 +92,6 @@ Texture::Texture(const CreateInfo& createInfo)
     __uuidof(ID3D12Resource),
     reinterpret_cast<void**>(&mResource));
   Assert(SUCCEEDED(hresult), "Failed to create texture");
-
-  // Create views
-  CreateViews();
 }
 
 // -------------------------------------------------------------------------- //
@@ -116,7 +112,6 @@ Texture::Texture(ID3D12Resource* resource,
   , mUsages(usages)
 {
   resource->AddRef();
-  CreateViews();
 }
 
 // -------------------------------------------------------------------------- //
@@ -166,25 +161,6 @@ Texture::SetName(const String& name)
     char16* _name = (name + "Mem").GetUTF16();
     mAllocation->SetName(_name);
     delete _name;
-  }
-}
-
-// -------------------------------------------------------------------------- //
-
-void
-Texture::CreateViews()
-{
-  Device* device = App::Instance()->GetDevice();
-
-  mSrvHandle = DescriptorAllocator::kInvalidHandle;
-  mRtvHandle = DescriptorAllocator::kInvalidHandle;
-
-  // Create SRV
-  if (bool(mUsages & Usage::kShaderResource)) {
-    if (mDimension == Dim::k1D) {
-    } else if (mDimension == Dim::k2D) {
-    } else if (mDimension == Dim::k3D) {
-    }
   }
 }
 

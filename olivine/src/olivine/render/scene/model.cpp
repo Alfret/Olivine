@@ -29,16 +29,22 @@
 // Project headers
 #include "olivine/core/assert.hpp"
 #include "olivine/core/file/path.hpp"
-#include "olivine/core/file/file.hpp"
 #include "olivine/core/console.hpp"
 #include "olivine/core/image.hpp"
 #include "olivine/render/api/vertex_buffer.hpp"
 #include "olivine/render/api/upload.hpp"
 #include "olivine/render/api/texture.hpp"
+#include "olivine/render/scene/loader.hpp"
 
 // Thirdparty headers
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "thirdparty/tinyobjloader/tiny_obj_loader.h"
+
+// Thirdparty headers
+#define TINYGLTF_IMPLEMENTATION
+#define TINYGLTF_NOEXCEPTION
+#define JSON_NOEXCEPTION
+#include "thirdparty/tinygltf/tiny_gltf.h"
 
 // ==========================================================================
 // // Model Implementation
@@ -47,7 +53,75 @@
 
 namespace olivine {
 
-Model::Model(const Path& path)
+Model::~Model()
+{
+  // Delete vertex and index data
+  delete mVertices;
+  mVertices = nullptr;
+
+  // Delete vertex buffer
+  delete mVertexBuffer;
+
+  // Delete material
+  delete mMaterial.mAlbedo;
+}
+
+// -------------------------------------------------------------------------- //
+
+Model::Error
+Model::Load(Loader* loader, const Path& path)
+{
+  switch (path.GetExtension()) {
+    case Path::Extension::kObj: {
+      return LoadObj(path);
+    }
+    case Path::Extension::kGltf: {
+      return LoadGltf(path);
+    }
+    default: {
+      return Error::kInvalidFileType;
+    }
+  }
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+Model::Upload(CommandQueue* queue, CommandList* list)
+{
+  // Upload vertices to vertex buffer in default heap
+  Buffer* buffer = &mVertexBuffer->GetBuffer();
+  UploadManager::Upload(queue,
+                        list,
+                        buffer,
+                        reinterpret_cast<u8*>(mVertices),
+                        mVertexCount * sizeof(Vertex));
+
+  // Create and upload texture
+  Image image;
+  const Image::Result result = image.Load(mMaterial.mAlbedoPath);
+  Assert(result == Image::Result::kSuccess,
+         "Failed to load image ({})",
+         mMaterial.mAlbedoPath);
+
+  Texture::CreateInfo texInfo;
+  texInfo.width = image.GetWidth();
+  texInfo.height = image.GetHeight();
+  texInfo.dimension = Texture::Dim::k2D;
+  texInfo.format = image.GetFormat() == Image::Format::kRGB
+                     ? Format::kInvalid
+                     : Format::kR8G8B8A8Unorm;
+  texInfo.heapKind = HeapKind::kDefault;
+  texInfo.usages = Texture::Usage::kShaderResource;
+  mMaterial.mAlbedo = new Texture(texInfo);
+  mMaterial.mAlbedo->SetName(mName + "MaterialAlbedoTex");
+  UploadManager::Upload(queue, list, mMaterial.mAlbedo, &image);
+}
+
+// -------------------------------------------------------------------------- //
+
+Model::Error
+Model::LoadObj(const Path& path)
 {
   // Material reader
   class MatReader : public tinyobj::MaterialReader
@@ -115,7 +189,7 @@ Model::Model(const Path& path)
 
   // Build vertex data
   tinyobj::mesh_t& mesh = shapes[0].mesh;
-  mVertexCount = mesh.indices.size();
+  mVertexCount = u32(mesh.indices.size());
   mVertices = new Vertex[mVertexCount];
   for (u32 i = 0; i < mVertexCount; i++) {
     tinyobj::index_t& index = mesh.indices[i];
@@ -144,56 +218,24 @@ Model::Model(const Path& path)
   mMaterial.mAlbedoPath =
     (path.GetDirectory() + material.diffuse_texname.c_str())
       .GetPathStringUTF8();
+
+  // Success
+  return Error::kSuccess;
 }
 
-// --------------------------------------------------------------------------
-// //
+// -------------------------------------------------------------------------- //
 
-Model::~Model()
+Model::Error
+Model::LoadGltf(const Path& path)
 {
-  // Delete vertex and index data
-  delete mVertices;
-  mVertices = nullptr;
 
-  // Delete vertex buffer
-  delete mVertexBuffer;
+  tinygltf::Model model;
+  tinygltf::TinyGLTF loader;
+  std::string err, warn;
+  bool r =
+    loader.LoadASCIIFromFile(&model, &err, &warn, path.GetPathStringUTF8(), 1);
 
-  // Delete material
-  delete mMaterial.mAlbedo;
+  return Error::kMissingMaterial;
 }
 
-// --------------------------------------------------------------------------
-// //
-
-void
-Model::Upload(CommandQueue* queue, CommandList* list)
-{
-  // Upload vertices to vertex buffer in default heap
-  Buffer* buffer = &mVertexBuffer->GetBuffer();
-  UploadManager::Upload(queue,
-                        list,
-                        buffer,
-                        reinterpret_cast<u8*>(mVertices),
-                        mVertexCount * sizeof(Vertex));
-
-  // Create and upload texture
-  Image image;
-  const Image::Result result = image.Load(mMaterial.mAlbedoPath);
-  Assert(result == Image::Result::kSuccess,
-         "Failed to load image ({})",
-         mMaterial.mAlbedoPath);
-
-  Texture::CreateInfo texInfo;
-  texInfo.width = image.GetWidth();
-  texInfo.height = image.GetHeight();
-  texInfo.dimension = Texture::Dim::k2D;
-  texInfo.format = image.GetFormat() == Image::Format::kRGB
-                     ? Format::kInvalid
-                     : Format::kR8G8B8A8Unorm;
-  texInfo.heapKind = HeapKind::kDefault;
-  texInfo.usages = Texture::Usage::kShaderResource;
-  mMaterial.mAlbedo = new Texture(texInfo);
-  mMaterial.mAlbedo->SetName(mName + "MaterialAlbedoTex");
-  UploadManager::Upload(queue, list, mMaterial.mAlbedo, &image);
-}
 }

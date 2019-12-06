@@ -30,7 +30,6 @@
 #include "olivine/app/app.hpp"
 #include "olivine/math/limits.hpp"
 #include "olivine/render/api/context.hpp"
-#include "olivine/render/api/descriptor_allocator.hpp"
 
 // ========================================================================== //
 // Device Implementation
@@ -79,16 +78,6 @@ Device::Init(const CreateInfo& createInfo)
   hresult = D3D12MA::CreateAllocator(&allocatorDesc, &mAllocator);
   Assert(SUCCEEDED(hresult), "Failed to create device allocator");
 
-  // Create descriptor allocators
-  mDescriptorAllocatorCbvUavSrv =
-    new DescriptorAllocator(Descriptor::Kind::kCbvSrvUav, false, 2048);
-  mDescriptorAllocatorSampler =
-    new DescriptorAllocator(Descriptor::Kind::kSampler, false, 128);
-  mDescriptorAllocatorRtv =
-    new DescriptorAllocator(Descriptor::Kind::kRtv, false, 32);
-  mDescriptorAllocatorDsv =
-    new DescriptorAllocator(Descriptor::Kind::kDsv, false, 16);
-
   // Check ray-tracing support
   D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
   hresult = mHandle->CheckFeatureSupport(
@@ -119,12 +108,6 @@ Device::Init(const CreateInfo& createInfo)
 
 Device::~Device()
 {
-  // Destroy descriptor allocators
-  delete mDescriptorAllocatorDsv;
-  delete mDescriptorAllocatorRtv;
-  delete mDescriptorAllocatorSampler;
-  delete mDescriptorAllocatorCbvUavSrv;
-
   // Release allocator
   mAllocator->Release();
   mAllocator = nullptr;

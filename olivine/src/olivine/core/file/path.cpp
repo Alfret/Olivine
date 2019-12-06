@@ -294,6 +294,14 @@ Path::GetExtension() const
     return Extension::kMp3;
   }
 
+  // Model/Scene
+  if (extensionString == ".obj") {
+    return Extension::kObj;
+  }
+  if (extensionString == ".gltf") {
+    return Extension::kGltf;
+  }
+
   // Video
   if (extensionString == ".avi") {
     return Extension::kAvi;

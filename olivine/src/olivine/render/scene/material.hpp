@@ -26,124 +26,62 @@
 // Headers
 // ========================================================================== //
 
-// Project heeaders
+// Project headers
 #include "olivine/core/macros.hpp"
 #include "olivine/core/string.hpp"
-#include "olivine/math/vector2f.hpp"
-#include "olivine/math/vector3f.hpp"
+#include "olivine/core/file/path.hpp"
 
 // ========================================================================== //
-// Model Declaration
+// Material Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-OL_FORWARD_DECLARE(VertexBuffer);
-OL_FORWARD_DECLARE(IndexBuffer);
 OL_FORWARD_DECLARE(Texture);
-OL_FORWARD_DECLARE(Path);
 OL_FORWARD_DECLARE(CommandList);
 OL_FORWARD_DECLARE(CommandQueue);
 
-OL_FORWARD_DECLARE(Loader);
-
-/** \class Model
+/** \class Material
  * \author Filip Björklund
- * \date 29 september 2019 - 18:55
+ * \date 06 december 2019 - 12:54
  * \brief
  * \details
  */
-class Model
+class Material
 {
-  OL_NO_COPY(Model);
-
-public:
-  /* Error enumeration */
-  enum class Error
-  {
-    kSuccess,
-    kInvalidFileType,
-    kFileNotFound,
-    kMissingMaterial
-  };
-
-  /* Vertex structure */
-  struct Vertex
-  {
-    /* Position */
-    Vector3F pos;
-    /* Normals */
-    Vector3F normals;
-    /* Texture coordinates */
-    Vector2F uv;
-  };
-
-  /* Material */
-  struct Material
-  {
-    /* Albedo texture path */
-    String mAlbedoPath;
-    /* Albedo texture */
-    Texture* mAlbedo = nullptr;
-  };
-
 private:
-  /* Name of model */
+  /* Name of the material */
   String mName;
 
-  /* Vertex data */
-  Vertex* mVertices = nullptr;
-  /* Number of vertices */
-  u32 mVertexCount;
+  /* Albedo path */
+  Path mPathAlbedo;
+  /* Albedo path */
+  Path mPathRoughness;
+  /* Albedo path */
+  Path mPathMetallic;
+  /* Albedo path */
+  Path mPathNormal;
 
-  /* Material */
-  Material mMaterial;
-
-  /* Vertex buffer */
-  VertexBuffer* mVertexBuffer = nullptr;
+  /* Albedo texture */
+  Texture* mTexAlbedo = nullptr;
+  /* Roughness texture */
+  Texture* mTexRoughness = nullptr;
+  /* Metallic texture */
+  Texture* mTexMetallic = nullptr;
+  /* Normal texture */
+  Texture* mTexNormal = nullptr;
 
 public:
-  /**
-   *
-   */
-  Model() = default;
-
-  /**
-   *
-   */
-  ~Model();
-
-  Error Load(Loader* loader, const Path& path);
+  Material(const String& name,
+           const Path& pathAlbedo,
+           const Path& pathRoughness,
+           const Path& pathMetallic,
+           const Path& pathNormal);
 
   /**
    *
    */
   void Upload(CommandQueue* queue, CommandList* list);
-
-  /**
-   *
-   */
-  u32 GetVertexCount() const { return mVertexCount; }
-
-  /**
-   *
-   */
-  VertexBuffer* GetVertexBuffer() const { return mVertexBuffer; }
-
-  /**
-   *
-   */
-  Material& GetMaterial() { return mMaterial; }
-
-  /**
-   *
-   */
-  const Material& GetMaterial() const { return mMaterial; }
-
-private:
-  Error LoadObj(const Path& path);
-
-  Error LoadGltf(const Path& path);
 };
 
 }

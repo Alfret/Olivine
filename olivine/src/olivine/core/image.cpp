@@ -33,15 +33,14 @@
 #include "olivine/render/color.hpp"
 
 // stb_image header
-#define STBI_ASSERT(x)                                                         \
-  olivine::Assert(x, "Assertion failed in library stb_image")
+#define STBI_ASSERT(x) OL_ASSERT(!!(x), "Assertion failed in library stb_image")
 #define STBI_NO_STDIO
 #define STB_IMAGE_IMPLEMENTATION
 #include <thirdparty/stb/stb_image.h>
 
 // stb_image_write header
 #define STBIW_ASSERT(x)                                                        \
-  olivine::Assert(x, "Assertion failed in library stb_image")
+  OL_ASSERT(!!(x), "Assertion failed in library stb_image")
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined(ALFLIB_TARGET_WINDOWS)
 #define STBI_MSC_SECURE_CRT
@@ -51,7 +50,7 @@
 // stb_image_resize header
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #define STBIR_ASSERT(x)                                                        \
-  olivine::Assert(x, "Assertion failed in library stb_image_resize")
+  OL_ASSERT(!!(x), "Assertion failed in library stb_image_resize")
 #include <thirdparty/stb/stb_image_resize.h>
 
 // ========================================================================== //

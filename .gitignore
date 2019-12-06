@@ -1,6 +1,7 @@
 # Resource
 *.png
 *.tga
+*.cso
 
 # Project
 .idea/
@@ -8,6 +9,10 @@
 *.DotSettings.user
 out/
 CMakeSettings.json
+*.vcxproj.filters
+*.vcxproj.user
+*.nsight-gfxproj
+*.cap
 
 # Object & Linker
 *.o

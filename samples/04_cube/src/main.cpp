@@ -160,7 +160,8 @@ public:
     mUploadList = new CommandList(CommandQueue::Kind::kCopy);
 
     // Load model
-    mModel = new Model(Path{ "res/cube.obj" });
+    mModel = new Model();
+    mModel->Load(nullptr, Path{ "res/cube.obj" });
     mModel->Upload(GetCopyQueue(), mUploadList);
 
     // Create SRV heap
@@ -196,11 +197,20 @@ public:
     const Descriptor rt = GetSwapChain()->CurrentRT();
 
     // Update constant buffer
-    const Vector4F cameraPos{ 0.0f, 0.0f, 2.8f };
-    Matrix4F m = Matrix4F::Perspective(45._Deg, 16.0f / 9.0f, 0.1f, 1000.0f) *
-                 Matrix4F::Translation(cameraPos) *
-                 Matrix4F::RotationY(Time::Now().GetSeconds()) *
-                 Matrix4F::RotationX(Time::Now().GetSeconds() / 2.0f);
+    f32 rotX, rotY;
+    if (false && IsGamepadConnected()) {
+      rotX = GetGamepadAxis(GamepadAxis::kLeftY);
+      rotY = GetGamepadAxis(GamepadAxis::kLeftX);
+    } else {
+      const Time time = Time::Now();
+      rotX = f32(time.GetSeconds() / 2.0f);
+      rotY = f32(time.GetSeconds());
+    }
+    const Vector4F modelPos{ 0.0f, 0.0f, 2.8f };
+    const Matrix4F m =
+      Matrix4F::Perspective(f32(45._Deg), 16.0f / 9.0f, 0.1f, 1000.0f) *
+      Matrix4F::Translation(modelPos) * Matrix4F::RotationY(rotY) *
+      Matrix4F::RotationX(rotX) * Matrix4F::Scale(1.1f);
 
     frame.constBuf->Write(m);
 

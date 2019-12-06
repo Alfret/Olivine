@@ -27,6 +27,7 @@
 // ========================================================================== //
 
 // Project headers
+#include "olivine/math/limits.hpp"
 #include "olivine/render/api/d3d12_util.hpp"
 
 // ========================================================================== //
@@ -48,7 +49,7 @@ class Descriptor
 
 public:
   /* Descriptor kinds */
-  enum class Kind
+  enum class Kind : u32
   {
     /* CBV, SRV and UAV (combined) descriptor type kind */
     kCbvSrvUav,
@@ -123,20 +124,35 @@ OL_FORWARD_DECLARE(Texture);
  * \details
  * Represents a descriptor heap to where descriptors can be written and used by
  * the device.
+ *
+ * There are two ways in which the heap functions. Either the user keeps track
+ * of the free indices themselves, or the 'Allocate' and 'Free' function is used
+ * to get indices that are not in use. Mixed usage will lead to strange
+ * problems.
  */
 class DescriptorHeap
 {
   OL_NO_COPY(DescriptorHeap);
 
+public:
+  /* */
+  using Index = u16;
+  static constexpr Index kInvalidIndex = Limits::kU16Max;
+
 private:
   /* Handle */
   ID3D12DescriptorHeap* mHandle;
+  /* Indices for allocations  */
+  u16* mIndices = nullptr;
+  /* Current index for allocations */
+  u16 mIndexHead = 0;
+  /* Capacity of heap */
+  u16 mCapacity;
+
   /* Kind of descriptors stored in heap */
   Descriptor::Kind mKind;
   /* Size of handles in heap */
   u32 mHandleSize;
-  /* Capacity of heap */
-  u32 mCount;
 
   /* Whether heap is shader visible */
   bool mIsShaderVisible;
@@ -146,32 +162,61 @@ public:
    * specified descriptor type.
    * \brief Create descriptor heap.
    * \param kind Kind of descriptors that heap store.
-   * \param count Number of descriptors of the kind that can be stored in the
+   * \param capacity Number of descriptors of the kind that can be stored in the
    * descriptor heap.
    * \param shaderVisible Whether descriptor heap should be shader visible
    */
-  DescriptorHeap(Descriptor::Kind kind, u32 count, bool shaderVisible = false);
+  DescriptorHeap(Descriptor::Kind kind,
+                 u16 capacity,
+                 bool shaderVisible = false);
 
   /** Destroy the descriptor heap.
    * \brief Destroy descriptor heap.
    */
   ~DescriptorHeap();
 
-  /** Write a render-target view (RTV) into the descriptor at the specified
+  /** Allocate a index from the heap that is not currently in use. This index is
+   * then used when calling the "WriteDescriptor" functions.
+   * \brief Allocate index.
+   * \return Allocated index.
+   */
+  Index Allocate();
+
+  /** Return an index to the heap that will no longer be used.
+   * \note The index or any descriptor at the index may not be used after a call
+   * to this function. As they might have been reused.
+   * \brief Return a no longer used index.
+   * \param index Index to return to the pool.
+   */
+  void Free(Index index);
+
+  /** Returns whether or not the descriptor heap has any free indices left. This
+   * will only work when the user works with the heap using 'Allocate' and
+   * 'Free', manual management of the heap does not register usage.
+   * \brief Returns whether heap has free indices.
+   * \return True if there are free indices in the heap otherwise false.
+   */
+  bool HasFreeIndices() const { return mIndexHead < mCapacity; }
+
+  /** Write a render-target view (RTV) into the descriptor heap at the specified
    * index.
    * \brief Write RTV descriptor.
-   * \param index Index to write resource at.
+   * \param index Index to write descriptor at.
    * \param texture Texture to write RTV for.
    * \param format Format of the RTV.
    */
-  Descriptor WriteDescriptorRTV(u32 index,
+  Descriptor WriteDescriptorRTV(Index index,
                                 Texture* texture,
                                 Format format = Format::kInvalid);
 
-  /**
-   *
+  /** Write a shader-resource view (SRV) into the descriptor heap at the
+   * specified index.
+   * \brief Write SRV descriptor.
+   * \param index Index to write descriptor at.
+   * \param texture Texture to write SRV for.
+   * \param format Format of the SRV.
    */
-  Descriptor WriteDescriptorSRV(u32 index,
+  Descriptor WriteDescriptorSRV(Index index,
                                 Texture* texture,
                                 Format format = Format::kInvalid);
 
@@ -180,14 +225,14 @@ public:
    * \param index Index to get descriptor at.
    * \return Descriptor at index
    */
-  Descriptor At(u32 index) const;
+  Descriptor At(Index index) const;
 
   /** Returns the descriptor in the heap at the specified index.
    * \brief Returns descriptor at index.
    * \param index Index to get descriptor at.
    * \return Descriptor at index
    */
-  Descriptor operator[](u32 index);
+  Descriptor operator[](Index index) const;
 
   /** Returns whether or not the descriptor heap is shader visible.
    * \brief Returns whether heap is shader visible.

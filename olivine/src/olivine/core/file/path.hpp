@@ -116,6 +116,11 @@ public:
     /** MP3 audio file **/
     kMp3,
 
+    /** Obj model file **/
+    kObj,
+    /** Gltf model/scene file **/
+    kGltf,
+
     /** AVI (audio video interleaved) video file **/
     kAvi,
     /** MP4 video file **/

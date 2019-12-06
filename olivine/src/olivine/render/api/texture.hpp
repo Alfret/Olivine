@@ -126,11 +126,6 @@ private:
   /* Allocation */
   D3D12MA::Allocation* mAllocation = nullptr;
 
-  /* SRV descriptor handle */
-  u32 mSrvHandle;
-  /* RTV descriptor handle */
-  u32 mRtvHandle;
-
 public:
   /** Create a texture from creation information.
    * \brief Create texture.

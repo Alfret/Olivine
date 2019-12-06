@@ -280,6 +280,13 @@ public:
    */
   OL_NODISCARD char16* GetUTF16() const;
 
+  /** Returns a reference to the internal 'std::string' buffer of the String
+   * class
+   * \brief Returns buffer.
+   * \return Buffer.
+   */
+  OL_NODISCARD const std::string& GetBuffer() const { return mBuffer; }
+
   /** Returns whether or not the string is empty. This is the same as checking
    * if the length equals zero (0).
    * \brief Returns whether string is empty.
@@ -441,5 +448,21 @@ String::Format(const String& format, ARGS&&... arguments)
   return String(
     fmt::format(format.mBuffer, std::forward<ARGS>(arguments)...).c_str());
 }
+
+}
+
+// ========================================================================== //
+// Functions
+// ========================================================================== //
+
+namespace std {
+template<>
+struct hash<olivine::String>
+{
+  std::size_t operator()(const olivine::String& string) const
+  {
+    return std::hash<std::string>{}(string.GetBuffer());
+  }
+};
 
 }

@@ -78,10 +78,10 @@ Descriptor::ToDescriptorType(Kind kind)
 namespace olivine {
 
 DescriptorHeap::DescriptorHeap(Descriptor::Kind kind,
-                               u32 count,
+                               u16 capacity,
                                bool shaderVisible)
-  : mKind(kind)
-  , mCount(count)
+  : mCapacity(capacity)
+  , mKind(kind)
   , mIsShaderVisible(shaderVisible)
 {
   Device* device = App::Instance()->GetDevice();
@@ -89,7 +89,7 @@ DescriptorHeap::DescriptorHeap(Descriptor::Kind kind,
   // Setup heap info
   D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
   heapDesc.Type = Descriptor::ToDescriptorType(mKind);
-  heapDesc.NumDescriptors = mCount;
+  heapDesc.NumDescriptors = UINT(mCapacity);
   heapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
                                  : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
   heapDesc.NodeMask = 0x00;
@@ -105,12 +105,21 @@ DescriptorHeap::DescriptorHeap(Descriptor::Kind kind,
   mHandleSize = device->GetHandle()->GetDescriptorHandleIncrementSize(
     Descriptor::ToDescriptorType(mKind));
   Assert(mHandleSize != 0, "Size of descriptor handle cannot be 0");
+
+  // Setup indices
+  mIndices = new u16[mCapacity];
+  for (u16 i = 0; i < mCapacity; i++) {
+    mIndices[i] = i;
+  }
 }
 
 // -------------------------------------------------------------------------- //
 
 DescriptorHeap::~DescriptorHeap()
 {
+  // Free indices
+  delete mIndices;
+
   // Release heap
   mHandle->Release();
   mHandle = nullptr;
@@ -118,8 +127,26 @@ DescriptorHeap::~DescriptorHeap()
 
 // -------------------------------------------------------------------------- //
 
+DescriptorHeap::Index
+DescriptorHeap::Allocate()
+{
+  Assert(HasFreeIndices(), "Descriptor heap is exhausted");
+  return mIndices[mIndexHead++];
+}
+
+// -------------------------------------------------------------------------- //
+
+void
+DescriptorHeap::Free(Index index)
+{
+  Assert(index != kInvalidIndex, "Cannot free descriptor at invalid index");
+  mIndices[--mIndexHead] = index;
+}
+
+// -------------------------------------------------------------------------- //
+
 Descriptor
-DescriptorHeap::WriteDescriptorRTV(u32 index, Texture* texture, Format format)
+DescriptorHeap::WriteDescriptorRTV(Index index, Texture* texture, Format format)
 {
   Device* device = App::Instance()->GetDevice();
 
@@ -154,7 +181,7 @@ DescriptorHeap::WriteDescriptorRTV(u32 index, Texture* texture, Format format)
 // -------------------------------------------------------------------------- //
 
 Descriptor
-DescriptorHeap::WriteDescriptorSRV(u32 index, Texture* texture, Format format)
+DescriptorHeap::WriteDescriptorSRV(Index index, Texture* texture, Format format)
 {
   Device* device = App::Instance()->GetDevice();
 
@@ -193,12 +220,12 @@ DescriptorHeap::WriteDescriptorSRV(u32 index, Texture* texture, Format format)
 // -------------------------------------------------------------------------- //
 
 Descriptor
-DescriptorHeap::At(u32 index) const
+DescriptorHeap::At(Index index) const
 {
-  Assert(index < mCount,
+  Assert(index < mCapacity,
          "Descriptor index out of bounds: {} not in [0, {})",
          index,
-         mCount);
+         mCapacity);
 
   // Retrieve CPU handle
   D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle =
@@ -216,7 +243,7 @@ DescriptorHeap::At(u32 index) const
 
 // -------------------------------------------------------------------------- //
 
-Descriptor DescriptorHeap::operator[](u32 index)
+Descriptor DescriptorHeap::operator[](Index index) const
 {
   return At(index);
 }

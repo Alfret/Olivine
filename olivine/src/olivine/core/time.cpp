@@ -139,10 +139,21 @@ Time::Now()
     frequency = f.QuadPart;
   }
 
+  // Startup counter
+  // TODO(Filip Björklund): See why this all of a sudden started to be a
+  //  problem. It starts off high enough that we get rounding errors when
+  //  converting to seconds.
+  static u64 start_counter = 0;
+  if (start_counter == 0) {
+    LARGE_INTEGER c;
+    QueryPerformanceCounter(&c);
+    start_counter = c.QuadPart;
+  }
+
   // Query counter
   LARGE_INTEGER c;
   QueryPerformanceCounter(&c);
-  const u64 counter = c.QuadPart;
+  const u64 counter = c.QuadPart - start_counter;
 
   return Time{ counter * 1000000 / frequency };
 }

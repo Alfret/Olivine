@@ -26,124 +26,59 @@
 // Headers
 // ========================================================================== //
 
-// Project heeaders
+// Project headers
 #include "olivine/core/macros.hpp"
-#include "olivine/core/string.hpp"
-#include "olivine/math/vector2f.hpp"
-#include "olivine/math/vector3f.hpp"
 
 // ========================================================================== //
-// Model Declaration
+// Scene Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-OL_FORWARD_DECLARE(VertexBuffer);
-OL_FORWARD_DECLARE(IndexBuffer);
-OL_FORWARD_DECLARE(Texture);
 OL_FORWARD_DECLARE(Path);
-OL_FORWARD_DECLARE(CommandList);
-OL_FORWARD_DECLARE(CommandQueue);
-
+OL_FORWARD_DECLARE(Model);
 OL_FORWARD_DECLARE(Loader);
 
-/** \class Model
+/** \class Scene
  * \author Filip Björklund
- * \date 29 september 2019 - 18:55
- * \brief
+ * \date 04 oktober 2019 - 11:19
+ * \brief Scene.
  * \details
+ * Represents a scene.
  */
-class Model
+class Scene
 {
-  OL_NO_COPY(Model);
-
 public:
-  /* Error enumeration */
-  enum class Error
+  /* Results */
+  enum class Result
   {
-    kSuccess,
-    kInvalidFileType,
-    kFileNotFound,
-    kMissingMaterial
-  };
-
-  /* Vertex structure */
-  struct Vertex
-  {
-    /* Position */
-    Vector3F pos;
-    /* Normals */
-    Vector3F normals;
-    /* Texture coordinates */
-    Vector2F uv;
-  };
-
-  /* Material */
-  struct Material
-  {
-    /* Albedo texture path */
-    String mAlbedoPath;
-    /* Albedo texture */
-    Texture* mAlbedo = nullptr;
+    kSuccess = 0,
+    kUnknownError
   };
 
 private:
-  /* Name of model */
-  String mName;
-
-  /* Vertex data */
-  Vertex* mVertices = nullptr;
-  /* Number of vertices */
-  u32 mVertexCount;
-
-  /* Material */
-  Material mMaterial;
-
-  /* Vertex buffer */
-  VertexBuffer* mVertexBuffer = nullptr;
+  /* Resource loader */
+  Loader* mLoader;
 
 public:
-  /**
+  /** Construct an empty scene
    *
    */
-  Model() = default;
+  Scene();
 
-  /**
-   *
+  /** Load the data for the entire scene from a file at the specified path. If
+   * there is anything else loaded into the scene before this call it will be
+   * deleted.
+   * \brief Load entire scene from file.
+   * \param path Path to scene file.
+   * \return Result.
    */
-  ~Model();
-
-  Error Load(Loader* loader, const Path& path);
-
-  /**
-   *
-   */
-  void Upload(CommandQueue* queue, CommandList* list);
-
-  /**
-   *
-   */
-  u32 GetVertexCount() const { return mVertexCount; }
+  Result Load(const Path& path);
 
   /**
    *
    */
-  VertexBuffer* GetVertexBuffer() const { return mVertexBuffer; }
-
-  /**
-   *
-   */
-  Material& GetMaterial() { return mMaterial; }
-
-  /**
-   *
-   */
-  const Material& GetMaterial() const { return mMaterial; }
-
-private:
-  Error LoadObj(const Path& path);
-
-  Error LoadGltf(const Path& path);
+  Loader* GetLoader() const { return mLoader; }
 };
 
 }

@@ -40,8 +40,8 @@
 #include <olivine/render/api/index_buffer.hpp>
 #include <olivine/render/api/texture.hpp>
 #include <olivine/render/api/constant_buffer.hpp>
-#include <olivine/render/scene/model.hpp>
-#include "olivine/render/api/descriptor_allocator.hpp"
+#include <olivine/render/scene/scene.hpp>
+#include <olivine/render/scene/loader.hpp>
 
 // ========================================================================== //
 // Sample
@@ -85,15 +85,8 @@ private:
   /* Command list for uploading */
   CommandList* mUploadList;
 
-  /* Root signature */
-  RootSignature* mRootSignature = nullptr;
-  /* Pipeline state */
-  PipelineState* mPipelineState = nullptr;
-
-  /* Model */
-  Model* mModel = nullptr;
-  /* SRV heap */
-  DescriptorHeap* mHeapSRV = nullptr;
+  /* Scene */
+  Scene* mScene = nullptr;
 
 public:
   /** Construct **/
@@ -108,69 +101,22 @@ public:
       frame.constBuf = new ConstantBuffer(sizeof(Matrix4F), HeapKind::kUpload);
     }
 
-    // Create root signature
-    RootSignature::CreateInfo rootSignatureInfo;
-    RootSignature::RootTableRange rootTableRange0 =
-      RootSignature::RootTableRange{
-        RootSignature::RootDescriptorKind::kSrv, 1, 0, 0
-      };
-    RootSignature::RootTable rootTable;
-    rootTable.ranges = { rootTableRange0 };
-    RootSignature::RootParameter rootParam0 =
-      RootSignature::RootParameter(rootTable, ShaderStage::kPixel);
-    RootSignature::RootDescriptor rootDescriptor0 = {
-      0, 0, RootSignature::RootDescriptorKind::kCbv
-    };
-    RootSignature::RootParameter rootParam1 = RootSignature::RootParameter(
-      rootDescriptor0, ShaderStage::kVertex | ShaderStage::kPixel);
-    rootSignatureInfo.parameters.push_back(rootParam0);
-    rootSignatureInfo.parameters.push_back(rootParam1);
-    RootSignature::StaticSampler staticSampler0;
-    staticSampler0.reg = 0;
-    staticSampler0.accessibleStages = ShaderStage::kPixel;
-    staticSampler0.magFilter = Sampler::Filter::kLinear;
-    rootSignatureInfo.staticSamplers.push_back(staticSampler0);
-    mRootSignature = new RootSignature(rootSignatureInfo);
-
-    // Create pipeline state
-    PipelineState::CreateInfo pipelineStateInfo{};
-    pipelineStateInfo.kind = PipelineState::Kind::kGraphics;
-    pipelineStateInfo.rootSignature = mRootSignature;
-    pipelineStateInfo.renderTargetFormats.push_back(
-      GetSwapChain()->GetFormat());
-    pipelineStateInfo.vs =
-      PipelineState::LoadShader(Path{ "res/forward_vs.cso" });
-    pipelineStateInfo.ps =
-      PipelineState::LoadShader(Path{ "res/forward_ps.cso" });
-    pipelineStateInfo.vertexAttributes = {
-      PipelineState::VertexAttribute{
-        "POSITION", 0, PipelineState::VertexAttributeKind::kFloat3 },
-      PipelineState::VertexAttribute{
-        "NORMAL",
-        0,
-        PipelineState::VertexAttributeKind::kFloat3,
-        offsetof(Model::Vertex, normals) },
-      PipelineState::VertexAttribute{
-        "TEXCOORD",
-        0,
-        PipelineState::VertexAttributeKind::kFloat2,
-        offsetof(Model::Vertex, uv) }
-    };
-    pipelineStateInfo.cullMode = CullMode::kBack;
-    mPipelineState = new PipelineState(pipelineStateInfo);
-    mPipelineState->SetName("MainPipelineState");
-
     // Create upload command list
     mUploadList = new CommandList(CommandQueue::Kind::kCopy);
 
-    // Load model
-    mModel = new Model(Path{ "res/cube.obj" });
-    mModel->Upload(GetCopyQueue(), mUploadList);
-
-    // Create SRV heap
-    mHeapSRV = new DescriptorHeap(Descriptor::Kind::kCbvSrvUav, 1, true);
-    mHeapSRV->WriteDescriptorSRV(0, mModel->GetMaterial().mAlbedo);
-    mHeapSRV->SetName("MainShaderResourceHeap");
+    // Load scene
+    mScene = new Scene;
+    Loader* loader = mScene->GetLoader();
+    Loader::Result r =
+      loader->AddModel("sphere", Path{ "res/sphere/sphere.obj" });
+    Assert(r == Loader::Result::kSuccess, "Failed to add sphere model");
+    r = loader->AddMaterial("copper",
+                            Path{ "res/material/copper/albedo.png" },
+                            Path{ "res/material/copper/roughness.png" },
+                            Path{ "res/material/copper/metallic.png" },
+                            Path{ "res/material/copper/normal.png" });
+    Assert(r == Loader::Result::kSuccess, "Failed to add copper material");
+    loader->Load(GetCopyQueue(), mUploadList);
   }
 
   /** Cleanup **/
@@ -182,10 +128,6 @@ public:
       delete frame.sem;
       delete frame.constBuf;
     }
-    delete mHeapSRV;
-    delete mModel;
-    delete mPipelineState;
-    delete mRootSignature;
     delete mUploadList;
   }
 
@@ -220,15 +162,6 @@ public:
     frame.list->ClearRenderTarget(rt, mClearColor);
     frame.list->SetViewport(EntireViewport());
     frame.list->SetScissorRectangle(EntireRectangle());
-
-    frame.list->SetPrimitiveTopology(PrimitiveTopology::kTriangleList);
-    frame.list->SetRootSignatureGraphics(mRootSignature);
-    frame.list->SetPipelineState(mPipelineState);
-    frame.list->SetVertexBuffer(mModel->GetVertexBuffer());
-    frame.list->SetDescriptorHeap(mHeapSRV);
-    frame.list->SetRootDescriptorTableGraphics(0, mHeapSRV->At(0));
-    frame.list->SetRootDescriptorGraphics(1, frame.constBuf);
-    frame.list->Draw(mModel->GetVertexCount());
 
     frame.list->TransitionResource(
       buffer, ResourceState::kRenderTarget, ResourceState::kPresent);
