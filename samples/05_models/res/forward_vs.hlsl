@@ -1,8 +1,19 @@
+// Model transform
 cbuffer Data : register(b0)
 {
   float4x4 mvp;
 };
 
+// Light information
+cbuffer LightData : register(b1)
+{
+  float4 pos;
+  float4 col;
+};
+
+// ==========================================================================//
+
+// Input to vertex shader
 struct VsInput
 {
   float3 pos : POSITION;
@@ -10,6 +21,7 @@ struct VsInput
   float2 uv : TEXCOORD;
 };
 
+// Input to pixel shader
 struct PsInput
 {
   float4 pos : SV_POSITION;
@@ -17,6 +29,9 @@ struct PsInput
   float2 uv : TEXCOORD;
 };
 
+// ==========================================================================//
+
+// Main
 PsInput
 main(VsInput input)
 {

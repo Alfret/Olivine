@@ -42,6 +42,7 @@
 #include <olivine/render/scene/model.hpp>
 #include <olivine/render/scene/entity.hpp>
 #include <olivine/render/renderer.hpp>
+#include "olivine/render/camera.hpp"
 
 // ========================================================================== //
 // Sample
@@ -83,8 +84,10 @@ private:
   Color mClearColor = Color::FromHex(0x8ba0c1ff);
 
   /* Command list for uploading */
-  CommandList* mUploadList;
+  CommandList* mUploadList = nullptr;
 
+  /* Camera */
+  Camera* mCamera = nullptr;
   /* Renderer */
   Renderer* mRenderer = nullptr;
   /* Scene */
@@ -108,7 +111,8 @@ public:
     // Create upload command list
     mUploadList = new CommandList(CommandQueue::Kind::kCopy);
 
-    // Create renderer
+    // Create camera and renderer
+    mCamera = new Camera(f32(45._Deg), 16.0f / 9.0f, 0.1f, 1000.0f);
     mRenderer = new Renderer;
 
     // Load scene
@@ -163,7 +167,7 @@ public:
     const Matrix4F m =
       Matrix4F::Perspective(f32(45._Deg), 16.0f / 9.0f, 0.1f, 1000.0f) *
       Matrix4F::Translation(modelPos) * Matrix4F::RotationY(rotY) *
-      Matrix4F::RotationX(rotX) * Matrix4F::Scale(0.2f);
+      Matrix4F::RotationX(rotX) * Matrix4F::Scale(0.3f);
     mEntity->SetTransform(m);
 
     // Begin render commands
@@ -176,7 +180,7 @@ public:
     frame.list->SetScissorRectangle(EntireRectangle());
 
     // Render scene
-    mRenderer->Render(frame.list, mScene);
+    mRenderer->Render(frame.list, mCamera, mScene);
 
     // Transition back to present
     frame.list->TransitionResource(

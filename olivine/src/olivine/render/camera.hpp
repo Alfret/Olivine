@@ -27,82 +27,49 @@
 // ========================================================================== //
 
 // Project headers
-#include "olivine/core/macros.hpp"
+#include "olivine/core/types.hpp"
+#include "olivine/math/matrix4f.hpp"
 #include "olivine/math/vector3f.hpp"
-#include "olivine/render/api/swap_chain.hpp"
-#include "olivine/math/vector4f.hpp"
 
 // ========================================================================== //
-// Renderer Declaration
+// Camera Declaration
 // ========================================================================== //
 
 namespace olivine {
 
-OL_FORWARD_DECLARE(CommandList);
-OL_FORWARD_DECLARE(Semaphore);
-OL_FORWARD_DECLARE(ConstantBuffer);
-OL_FORWARD_DECLARE(RootSignature);
-OL_FORWARD_DECLARE(PipelineState);
-OL_FORWARD_DECLARE(DescriptorHeap);
-
-OL_FORWARD_DECLARE(Scene);
-OL_FORWARD_DECLARE(Camera);
-
-/** \class Renderer
+/** \class Camera
  * \author Filip Björklund
- * \date 06 december 2019 - 15:59
+ * \date 07 december 2019 - 13:49
  * \brief
  * \details
  */
-class Renderer
+class Camera
 {
 private:
-  /* Max entities that can be rendered in a scene */
-  static constexpr u32 MAX_ENTITY = 128;
-  /* Max lights that can be rendered in a scene */
-  static constexpr u32 MAX_LIGHT = 16;
+  /* Project matrix */
+  Matrix4F mProjection;
+  /* View matrix */
+  Matrix4F mView;
 
-  /* Material descriptor start */
-  static constexpr u32 DESC_START_MAT = 0;
-
-  /* Light structure */
-  struct LightData
-  {
-    Vector3F pos;
-    Vector4F color;
-  };
-
-  /* Per-frame resources */
-  struct Frame
-  {
-    /* Constant buffer for per-model data */
-    ConstantBuffer* modelCB;
-    /* Constant buffer for light data */
-    ConstantBuffer* lightCB;
-  };
-
-private:
-  /* Frame resources */
-  Frame mFrames[SwapChain::kBufferCount];
-
-  /* GPU-visible descriptor heap */
-  DescriptorHeap* mDescriptorHeap;
-
-  /* Root signature for the PBR shader */
-  RootSignature* mRootSignature;
-  /* PBR forward shader */
-  PipelineState* mPipelineState;
+  /* Near z-depth */
+  f32 mZNear;
+  /* Far z-depth */
+  f32 mZFar;
+  /* Position */
+  Vector3F mPos;
 
 public:
-  Renderer();
+  Camera(f32 fov, f32 aspectRatio, f32 zNear, f32 zFar);
 
-  ~Renderer();
+  void Resize(f32 width, f32 height);
 
-  void Render(CommandList* list, const Camera* camera, const Scene* scene);
+  const Matrix4F& GetProjection() const { return mProjection; }
 
-private:
-  /* Setup the root signature and the PSO */
-  void SetupPSO();
+  const Matrix4F& GetView() const { return mView; }
+
+  const Vector3F& GetPosition() const { return mPos; }
+
+  void SetPosition(const Vector3F& position) { mPos = position; }
 };
 
 }

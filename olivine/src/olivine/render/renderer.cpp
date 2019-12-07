@@ -29,14 +29,16 @@
 // Project headers
 #include "olivine/app/app.hpp"
 #include "olivine/core/file/path.hpp"
+#include "olivine/render/color.hpp"
+#include "olivine/render/camera.hpp"
 #include "olivine/render/scene/scene.hpp"
 #include "olivine/render/scene/entity.hpp"
 #include "olivine/render/api/constant_buffer.hpp"
 #include "olivine/render/api/root_signature.hpp"
 #include "olivine/render/api/pipeline_state.hpp"
+#include "olivine/render/api/command_list.hpp"
 #include "olivine/render/scene/model.hpp"
 #include "olivine/render/scene/loader.hpp"
-#include "olivine/render/api/command_list.hpp"
 
 // ========================================================================== //
 // Renderer Implementation
@@ -47,11 +49,14 @@ namespace olivine {
 Renderer::Renderer()
 {
   // Setup frame resources
+  u32 idx = 0;
   for (Frame& frame : mFrames) {
     frame.modelCB =
       new ConstantBuffer(sizeof(Matrix4F) * MAX_ENTITY, HeapKind::kUpload);
-    frame.lightCB =
-      new ConstantBuffer(sizeof(Matrix4F) * MAX_LIGHT, HeapKind::kUpload);
+    frame.modelCB->SetName(String::Format("renderer_model_cb_{}", idx));
+    frame.lightCB = new ConstantBuffer(sizeof(LightData), HeapKind::kUpload);
+    frame.lightCB->SetName(String::Format("renderer_light_cb_{}", idx));
+    idx++;
   }
 
   // Setup descriptor heap
@@ -78,7 +83,7 @@ Renderer::~Renderer()
 // -------------------------------------------------------------------------- //
 
 void
-Renderer::Render(CommandList* list, const Scene* scene)
+Renderer::Render(CommandList* list, const Camera* camera, const Scene* scene)
 {
   SwapChain* swapChain = App::Instance()->GetSwapChain();
   // Device* device = App::Instance()->GetDevice();
@@ -92,11 +97,22 @@ Renderer::Render(CommandList* list, const Scene* scene)
   mDescriptorHeap->CopyFrom(loader->GetSrvHeap(),
                             Loader::MAX_MAT * Loader::SRV_PER_MAT);
 
+  // Setup light information
+  LightData lightData;
+  Memory::Clear(&lightData, sizeof(LightData));
+  lightData.pos = Vector3F(0, 2.0f, 0.0f);
+  const Color col = Color::kWhite;
+  lightData.color = Vector4F{
+    col.GetRedF32(), col.GetGreenF32(), col.GetBlueF32(), col.GetAlphaF32()
+  };
+  frame.lightCB->Write(lightData, 1);
+
   // Record common commands
   list->SetPrimitiveTopology(PrimitiveTopology::kTriangleList);
   list->SetRootSignatureGraphics(mRootSignature);
   list->SetPipelineState(mPipelineState);
   list->SetDescriptorHeap(mDescriptorHeap);
+  list->SetRootDescriptorGraphics(2, frame.lightCB);
 
   // Render each entity
   u32 idx = 0;
@@ -122,8 +138,7 @@ Renderer::Render(CommandList* list, const Scene* scene)
 void
 Renderer::SetupPSO()
 {
-  // Create root signature
-  RootSignature::CreateInfo rootSignatureInfo;
+  // [TABLE] SRVs for materials
   RootSignature::RootTableRange rootTableRange0 = RootSignature::RootTableRange{
     RootSignature::RootDescriptorKind::kSrv, 4, 0, 0
   };
@@ -131,13 +146,26 @@ Renderer::SetupPSO()
   rootTable.ranges = { rootTableRange0 };
   RootSignature::RootParameter rootParam0 =
     RootSignature::RootParameter(rootTable, ShaderStage::kPixel);
+
+  // [DESC] CBV for transform
   RootSignature::RootDescriptor rootDescriptor0 = {
     0, 0, RootSignature::RootDescriptorKind::kCbv
   };
   RootSignature::RootParameter rootParam1 = RootSignature::RootParameter(
     rootDescriptor0, ShaderStage::kVertex | ShaderStage::kPixel);
+
+  // [DESC] CBV for light data
+  RootSignature::RootDescriptor rootDescriptor1 = {
+    1, 0, RootSignature::RootDescriptorKind::kCbv
+  };
+  RootSignature::RootParameter rootParam2 = RootSignature::RootParameter(
+    rootDescriptor1, ShaderStage::kVertex | ShaderStage::kPixel);
+
+  // Create root signture
+  RootSignature::CreateInfo rootSignatureInfo;
   rootSignatureInfo.parameters.push_back(rootParam0);
   rootSignatureInfo.parameters.push_back(rootParam1);
+  rootSignatureInfo.parameters.push_back(rootParam2);
   RootSignature::StaticSampler staticSampler0;
   staticSampler0.reg = 0;
   staticSampler0.accessibleStages = ShaderStage::kPixel;
