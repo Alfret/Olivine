@@ -163,12 +163,14 @@ public:
     // Update constant buffer
     const f32 rotX = f32(Time::Now().GetSeconds() / 2.0f);
     const f32 rotY = f32(Time::Now().GetSeconds());
-    const Vector4F modelPos{ 0.0f, 0.0f, 2.8f };
-    const Matrix4F m =
-      Matrix4F::Perspective(f32(45._Deg), 16.0f / 9.0f, 0.1f, 1000.0f) *
+    const f32 lx = GetGamepadAxis(GamepadAxis::kLeftX);
+    const f32 ly = GetGamepadAxis(GamepadAxis::kLeftY);
+    const f32 ry = GetGamepadAxis(GamepadAxis::kRightY);
+    const Vector4F modelPos{ 3.0f * lx, 3.0f * -ly, 3.0f * ry + 3.0f };
+    const Matrix4F modelMatrix =
       Matrix4F::Translation(modelPos) * Matrix4F::RotationY(rotY) *
       Matrix4F::RotationX(rotX) * Matrix4F::Scale(0.3f);
-    mEntity->SetTransform(m);
+    mEntity->SetTransform(modelMatrix);
 
     // Begin render commands
     frame.list->Reset();

@@ -31,6 +31,7 @@
 #include "olivine/math/vector3f.hpp"
 #include "olivine/render/api/swap_chain.hpp"
 #include "olivine/math/vector4f.hpp"
+#include "olivine/math/matrix4f.hpp"
 
 // ========================================================================== //
 // Renderer Declaration
@@ -65,6 +66,15 @@ private:
   /* Material descriptor start */
   static constexpr u32 DESC_START_MAT = 0;
 
+  /* Camera data */
+  struct CameraData
+  {
+    /* Projection matrix */
+    Matrix4F proj;
+    /* View matrix */
+    Matrix4F view;
+  };
+
   /* Light structure */
   struct LightData
   {
@@ -77,6 +87,8 @@ private:
   {
     /* Constant buffer for per-model data */
     ConstantBuffer* modelCB;
+    /* Constant buffer for camera data */
+    ConstantBuffer* cameraCB;
     /* Constant buffer for light data */
     ConstantBuffer* lightCB;
   };

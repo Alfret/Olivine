@@ -39,19 +39,6 @@ struct PsInput
 
 // ==========================================================================//
 
-float3x3
-to_3x3(float4x4 mat)
-{
-  float3x3 o = {
-    mat._m00_m01_m02,
-    mat._m10_m11_m12,
-    mat._m20_m21_m22,
-  };
-  return o;
-}
-
-// ==========================================================================//
-
 // Main
 PsInput
 main(VsInput input)
@@ -61,7 +48,7 @@ main(VsInput input)
   PsInput output;
   output.world_pos = mul(float4(input.pos, 1.0f), model_mat).xyz;
   output.pos = mul(float4(output.world_pos, 1.0f), mul(view_mat, proj_mat));
-  output.normal = mul(input.normal, to_3x3(model_mat));
+  output.normal = mul(float4(input.normal, 0.0f), model_mat).xyz;
   output.uv = input.uv;
   return output;
 }

@@ -54,6 +54,8 @@ Renderer::Renderer()
     frame.modelCB =
       new ConstantBuffer(sizeof(Matrix4F) * MAX_ENTITY, HeapKind::kUpload);
     frame.modelCB->SetName(String::Format("renderer_model_cb_{}", idx));
+    frame.cameraCB = new ConstantBuffer(sizeof(CameraData), HeapKind::kUpload);
+    frame.cameraCB->SetName(String::Format("renderer_camera_cb_{}", idx));
     frame.lightCB = new ConstantBuffer(sizeof(LightData), HeapKind::kUpload);
     frame.lightCB->SetName(String::Format("renderer_light_cb_{}", idx));
     idx++;
@@ -76,6 +78,7 @@ Renderer::~Renderer()
   delete mDescriptorHeap;
   for (Frame& frame : mFrames) {
     delete frame.lightCB;
+    delete frame.cameraCB;
     delete frame.modelCB;
   }
 }
@@ -97,10 +100,16 @@ Renderer::Render(CommandList* list, const Camera* camera, const Scene* scene)
   mDescriptorHeap->CopyFrom(loader->GetSrvHeap(),
                             Loader::MAX_MAT * Loader::SRV_PER_MAT);
 
+  // Setup camera information
+  CameraData cameraData;
+  cameraData.proj = camera->GetProjection();
+  cameraData.view = camera->GetView();
+  frame.cameraCB->Write(cameraData, 1);
+
   // Setup light information
   LightData lightData;
   Memory::Clear(&lightData, sizeof(LightData));
-  lightData.pos = Vector3F(0, 2.0f, 0.0f);
+  lightData.pos = Vector3F(2.0f, 2.0f, 0.0f);
   const Color col = Color::kWhite;
   lightData.color = Vector4F{
     col.GetRedF32(), col.GetGreenF32(), col.GetBlueF32(), col.GetAlphaF32()
@@ -113,6 +122,7 @@ Renderer::Render(CommandList* list, const Camera* camera, const Scene* scene)
   list->SetPipelineState(mPipelineState);
   list->SetDescriptorHeap(mDescriptorHeap);
   list->SetRootDescriptorGraphics(2, frame.lightCB);
+  list->SetRootDescriptorGraphics(3, frame.cameraCB);
 
   // Render each entity
   u32 idx = 0;
@@ -161,11 +171,19 @@ Renderer::SetupPSO()
   RootSignature::RootParameter rootParam2 = RootSignature::RootParameter(
     rootDescriptor1, ShaderStage::kVertex | ShaderStage::kPixel);
 
+  // [DESC] CBV for camera data
+  RootSignature::RootDescriptor rootDescriptor2 = {
+    2, 0, RootSignature::RootDescriptorKind::kCbv
+  };
+  RootSignature::RootParameter rootParam3 = RootSignature::RootParameter(
+    rootDescriptor2, ShaderStage::kVertex | ShaderStage::kPixel);
+
   // Create root signture
   RootSignature::CreateInfo rootSignatureInfo;
   rootSignatureInfo.parameters.push_back(rootParam0);
   rootSignatureInfo.parameters.push_back(rootParam1);
   rootSignatureInfo.parameters.push_back(rootParam2);
+  rootSignatureInfo.parameters.push_back(rootParam3);
   RootSignature::StaticSampler staticSampler0;
   staticSampler0.reg = 0;
   staticSampler0.accessibleStages = ShaderStage::kPixel;
